@@ -110,9 +110,6 @@ Client posts requests to different URL and recieves PublicTable structure packed
 ```
 ```json
   {
-    "_comment" : "Exemplary (sorted) JSON of PublicTable class"
-  }
-  {
     "bid": 10,
     "client_cards_1": [
       "nr 1 card",
