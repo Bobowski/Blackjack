@@ -108,6 +108,22 @@ Client posts requests to different URL and recieves PublicTable structure packed
     def pass(self):
         #TODO
 ```
-
+```json
+  {
+    "bid": 10,
+    "client_cards_1": [
+      "nr 1 card",
+      "nr 2 card"
+    ],
+    "client_cards_2": [
+      "another cards"
+    ],
+    "croupier_cards": [
+      "croupier card nr 1"
+    ],
+    "insurance": 0,
+    "state": 0
+  }
+```
     
     
