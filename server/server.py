@@ -1,5 +1,7 @@
 from random import shuffle
 
+import json
+
 
 class Card:
     def __init__(self, color, rank):
@@ -10,6 +12,8 @@ class Card:
 
     def get_rank(self):
         return self.rank
+
+    # TODO JSON to Table parser if needed
 
 
 class Deck:
@@ -26,6 +30,8 @@ class Deck:
     def get_card(self):
         return self.cards.pop()
 
+    # TODO JSON to Table parser if needed
+
 
 class PublicTable:
     def __init__(self, deck, bid):
@@ -35,6 +41,37 @@ class PublicTable:
         self.client_cards_2 = []
         self.bid = bid
         self.croupier_cards = [deck.get_card(), ]
+
+    # JSON To PublicTable parser similarly other parsers
+    # TODO parser optimization maybe?
+    def JSONtoPublicTable(self, js):
+        if 'bid' in js:
+            self.bid = js['bid']
+        if 'insurance' in js:
+            self.insurance = js['insurance']
+        if 'state' in js:
+            self.state = js['state']
+        if 'client_cards_1' in js:
+            i = 0
+            for card in self.client_cards_1:
+                if i < len(js['client_cards_1']):
+                    card.color = js['client_cards_1'][i]['color']
+                    card.rank = js['client_cards_1'][i]['rank']
+                    i += 1
+        if 'client_cards_2' in js:
+            i = 0
+            for card in self.client_cards_2:
+                if i < len(js['client_cards_2']):
+                    card.color = js['client_cards_2'][i]['color']
+                    card.rank = js['client_cards_2'][i]['rank']
+                    i += 1
+        if 'croupier_cards' in js:
+            i = 0
+            for card in self.croupier_cards:
+                if i < len(js['croupier_cards']):
+                    card.color = js['croupier_cards'][i]['color']
+                    card.rank = js['croupier_cards'][i]['rank']
+                    i += 1
 
 
 class Table:
@@ -73,3 +110,10 @@ class Table:
 
     def pas(self):
         return 0;
+
+    # TODO JSON to Table parser if needed
+
+
+# I don't know if this belong to server or client ;p object -> JSON
+def toJSON(obj):
+    return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True)
