@@ -110,20 +110,27 @@ Client posts requests to different URL and recieves PublicTable structure packed
 ```
 ```json
   {
-    "bid": 10,
-    "client_cards_1": [
-      "nr 1 card",
-      "nr 2 card"
-    ],
-    "client_cards_2": [
-      "another cards"
-    ],
-    "croupier_cards": [
-      "croupier card nr 1"
-    ],
-    "insurance": 0,
-    "state": 0
-  }
+  "bid": 10,
+  "client_cards_1": [
+    {
+      "color": "H",
+      "rank": 10
+    },
+    {
+      "color": "D",
+      "rank": 1
+    }
+  ],
+  "client_cards_2": [],
+  "croupier_cards": [
+    {
+      "color": "S",
+      "rank": 10
+    }
+  ],
+  "insurance": 0,
+  "state": 0
+}
 ```
     
     
