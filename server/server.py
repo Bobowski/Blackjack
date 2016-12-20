@@ -1,5 +1,7 @@
 from random import shuffle
 
+from flask import Flask, request, jsonify
+
 import json
 
 
@@ -13,7 +15,7 @@ class Card:
     def get_rank(self):
         return self.rank
 
-    # TODO JSON to Table parser if needed
+        # TODO JSON to Table parser if needed
 
 
 class Deck:
@@ -30,7 +32,7 @@ class Deck:
     def get_card(self):
         return self.cards.pop()
 
-    # TODO JSON to Table parser if needed
+        # TODO JSON to Table parser if needed
 
 
 class PublicTable:
@@ -111,9 +113,85 @@ class Table:
     def pas(self):
         return 0;
 
-    # TODO JSON to Table parser if needed
+        # TODO JSON to Table parser if needed
 
 
 # I don't know if this belong to server or client ;p object -> JSON
 def toJSON(obj):
     return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True)
+
+
+# Game creation
+
+
+class Client:
+    clients_ids = []
+    clients_list = []
+
+    def __init__(self, bid):
+        self.id = Client.get_id()
+        self.table = Table(bid)
+        self.public_table = PublicTable(bid)
+        Client.clients_list.append(self)
+
+    @staticmethod
+    def get_id():
+        i = 1
+        # Can I iterate through client's ids from clients_list list (containing only Client objects)
+        # It would make clients_ids list redundand
+        while i in Client.clients_ids:
+            i += 1
+        return i
+
+    @staticmethod
+    def get_client(client_id):
+        for client in Client.clients_list:
+            if client.id == client_id:
+                return client
+
+
+app = Flask(__name__)
+
+
+# Handling requests
+
+
+# Game beginning
+
+@app.route('/begin', methods=['POST'])
+def start_game():
+    input_json = request.get_json(force=True)
+    client = Client(input_json)
+    Client.clients_list.append(client)
+    answer = {"bid": client.public_table.bid,
+              "client_cards_1": client.public_table.client_cards_1,
+              "client_cards_2": client.public_table.client_cards_2,
+              "croupier_cards": client.public_table.croupier_cards,
+              "insurance": client.id,
+              "state": client.public_table.state}
+    return jsonify(answer)
+
+
+@app.route('/game-<client_id>', methods=['POST'])
+def handle_request(client_id):
+    input_json = request.get_json(force=True)
+    client = Client.get_client(client_id)
+    if input_json == 'SPLIT':
+        client.table.split()
+    elif input_json == 'INSURE':
+        client.table.insure()
+    elif input_json == 'DOUBLE':
+        client.table.double()
+    elif input_json == 'TAKE':
+        client.table.add_card()
+    answer = {"bid": client.public_table.bid,
+              "client_cards_1": client.public_table.client_cards_1,
+              "client_cards_2": client.public_table.client_cards_2,
+              "croupier_cards": client.public_table.croupier_cards,
+              "insurance": client.id,
+              "state": client.public_table.state}
+    return jsonify(answer)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
