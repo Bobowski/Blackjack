@@ -188,7 +188,7 @@ def handle_request(client_id):
               "client_cards_1": client.public_table.client_cards_1,
               "client_cards_2": client.public_table.client_cards_2,
               "croupier_cards": client.public_table.croupier_cards,
-              "insurance": client.id,
+              "insurance": client.public_table.insurance,
               "state": client.public_table.state}
     return jsonify(answer)
 
