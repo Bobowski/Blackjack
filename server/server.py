@@ -33,20 +33,21 @@ class Deck:
 
 
 class PublicTable:
-    def __init__(self, deck, bid):
+    def __init__(self, deck, bid, id):
         self.insurance = 0
         self.state = 0
         self.client_cards_1 = []
         self.client_cards_2 = []
         self.bid = bid
         self.croupier_cards = [deck.get_card(), ]
+        self.id = id
 
 
 class Table:
-    def __init__(self, bid):
+    def __init__(self, bid, id):
         self.deck = Deck()
         self.croupier_card = self.deck.get_card()
-        self.public_table = PublicTable(self.deck, bid)
+        self.public_table = PublicTable(self.deck, bid, id)
         self.add_card()
         self.add_card()
         self.game_state = 0
@@ -93,7 +94,7 @@ class Client:
 
     def __init__(self, bid):
         self.id = Client.get_id()
-        self.table = Table(bid)
+        self.table = Table(bid,self.id)
 
     @staticmethod
     def get_id():
@@ -123,6 +124,7 @@ app = Flask(__name__)
 def start_game():
     input_json = request.get_json(force=True)
     client = Client(int(input_json))
+    # TODO przerobienie tego na slownik { id: client/stol}
     Client.clients_list.append(client)
     Client.clients_ids.append(client.id)
     answer = toJSON(client.table.public_table)
