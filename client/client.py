@@ -1,14 +1,13 @@
 import requests
 
-server = "http://127.0.0.1:5000/"
+server = "http://localhost:5000/"
 id = -1;
 
 
 def enter_game():
     return requests.post(server + "begin", json={"action": "register", "bid": 10})
 
-
-print(enter_game())
+print(enter_game().json())
 
 
 # state = 0
