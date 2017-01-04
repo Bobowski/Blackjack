@@ -31,27 +31,25 @@ class Deck:
     def get_card(self):
         return self.cards.pop()
 
-
-class PublicTable:
-    def __init__(self, deck, bid, id):
+class Table:
+    def __init__(self, bid, id):
         self.insurance = 0
-        self.state = 0
+        self.state =0
         self.client_cards_1 = []
         self.client_cards_2 = []
         self.bid = bid
-        self.croupier_cards = [deck.get_card(), ]
-        self.id = id
-
-
-class Table:
-    def __init__(self, bid, id):
         self.deck = Deck()
         self.croupier_card = self.deck.get_card()
         self.public_table = PublicTable(self.deck, bid, id)
         self.add_card()
         self.add_card()
         self.game_state = 0
-
+        
+    def to_json(self, bid):
+      d={'insurance' : 0, 'state' : 0, 'client_cards_1' : self.client_cards_1 , 'client_cards_2' : self.client_cards_2, 'bid':  self.bid
+      'croupier_cards': self.croupier_card }
+      return flask.jsonify(**d)
+    
     def add_card(self):
         if len(self.public_table.client_cards_2) != 0:
             self.public_table.client_cards_2.append(self.deck.get_card())
