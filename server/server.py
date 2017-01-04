@@ -31,10 +31,11 @@ class Deck:
     def get_card(self):
         return self.cards.pop()
 
+
 class Table:
     def __init__(self, bid, id):
         self.insurance = 0
-        self.state =0
+        self.state = 0
         self.client_cards_1 = []
         self.client_cards_2 = []
         self.bid = bid
@@ -44,12 +45,13 @@ class Table:
         self.add_card()
         self.add_card()
         self.game_state = 0
-        
+
     def to_json(self, bid):
-      d={'insurance' : 0, 'state' : 0, 'client_cards_1' : self.client_cards_1 , 'client_cards_2' : self.client_cards_2, 'bid':  self.bid
-      'croupier_cards': self.croupier_card }
-      return flask.jsonify(**d)
-    
+        d = {'insurance': 0, 'state': 0, 'client_cards_1': self.client_cards_1, 'client_cards_2': self.client_cards_2,
+             'bid': self.bid
+             'croupier_cards': self.croupier_card}
+        return flask.jsonify(**d)
+
     def add_card(self):
         if len(self.public_table.client_cards_2) != 0:
             self.public_table.client_cards_2.append(self.deck.get_card())
@@ -86,29 +88,12 @@ def toJSON(obj):
 
 # Game creation
 
-class Client:
-    clients_ids = []
-    clients_list = []
+clients = {}
+last_id = -1
+actions = {"split" : Table.split} #TODO
 
-    def __init__(self, bid):
-        self.id = Client.get_id()
-        self.table = Table(bid,self.id)
-
-    @staticmethod
-    def get_id():
-        i = 1
-        # Can I iterate through client's ids from clients_list list (containing only Client objects)
-        # It would make clients_ids list redundand
-        while i in Client.clients_ids:
-            i += 1
-        return i
-
-    @staticmethod
-    def get_client(client_id):
-        for client in Client.clients_list:
-            if client.id == client_id:
-                return client
-
+def get_id():
+    return ++last_id
 
 app = Flask(__name__)
 
@@ -120,30 +105,19 @@ app = Flask(__name__)
 
 @app.route('/begin', methods=['POST'])
 def start_game():
-    input_json = request.get_json(force=True)
-    client = Client(int(input_json))
-    # TODO przerobienie tego na slownik { id: client/stol}
-    Client.clients_list.append(client)
-    Client.clients_ids.append(client.id)
-    answer = toJSON(client.table.public_table)
-    return answer
+    input_json = request.get_json()
+    if input_json["action"] == "register":
+        cid = get_id()
+        clients[cid] = Table(input_json["bid"])
+        return cid
 
 
 @app.route('/game-<client_id>', methods=['POST'])
 def handle_request(client_id):
-    input_json = request.get_json(force=True)
-    client = Client.get_client(int(client_id))
-    if input_json == 'SPLIT':
-        client.table.split()
-    elif input_json == 'INSURE':
-        client.table.insure()
-    elif input_json == 'DOUBLE':
-        client.table.double()
-    elif input_json == 'TAKE':
-        client.table.add_card()
-    answer = toJSON(client.table.public_table)
-    return answer
+    input_json = request.get_json()
+    actions[input_json["action"]](clients[client_id])
+    return clients[client_id].to_json()
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='localhost', port=5000, debug=True)
