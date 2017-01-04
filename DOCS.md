@@ -6,7 +6,7 @@ Client requests may vary depending on game state
 ```javascript
 ActionBegin
 {
-    "action": string //must be "register",
+    "header": "register",
     "bid": number
 }
 ```
@@ -14,18 +14,25 @@ ActionBegin
 ```javascript
 ActionInGame
 {
-    "action": string //one of the following "split", "insure", "double", "take", "pass"
+    "header": string //one of the following "split", "insure", "double", "take", "pass"
 }
 ```
 
 ## Server
 Server response may vary depending on game state
 
+```javascript
+Error
+{
+    "header": "error",
+    "message": string
+}
+```
 **Begin Game**
 ```javascript
 ID
 {
-    "game_state": "begin_game",
+    "header": "begin_game",
     "id": number
 }
 ```
@@ -33,7 +40,7 @@ ID
 ```javascript
 TableInGame
 {
-    "game_state": "in_game",
+    "header": "in_game",
     "insurance": number,
     "hands": [Hand],
     "bid": number,
@@ -44,7 +51,7 @@ TableInGame
 ```javascript
 TableEndGame
 {
-    "game_state": "end_game",
+    "header": "end_game",
     "winner": string //player or croupier
     "winning_hand": Hand
 }

@@ -79,6 +79,7 @@ class Table:
         self.game_state = "begin_game"
 
     def to_json(self):
+        #TODO: make it compatible with docs
         d = {'insurance': 0, 'state': 0, 'client_hands': self.client_hands, 'bid': self.bid,
              'croupier_cards': self.croupier_card}
         return jsonify(**d)
@@ -143,14 +144,16 @@ app = Flask(__name__)
 
 # Game beginning
 
+#TODO exception handling
+
 @app.route('/begin', methods=['POST'])
 def start_game():
     input_json = request.get_json()
-    if input_json["action"] == "register":
+    if input_json["header"] == "register":
         cid = get_id()
         clients[cid] = Table(input_json["bid"])
         print("hdwukhdka")
-        return jsonify({"game_state": "begin_game", "id": cid})
+        return jsonify({"header": "begin_game", "id": cid})
 
 
 @app.route('/game-<client_id>', methods=['POST'])
