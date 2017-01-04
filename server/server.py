@@ -1,6 +1,6 @@
 from random import shuffle
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 import json
 
@@ -50,7 +50,7 @@ class Table:
         d = {'insurance': 0, 'state': 0, 'client_cards_1': self.client_cards_1, 'client_cards_2': self.client_cards_2,
              'bid': self.bid
              'croupier_cards': self.croupier_card}
-        return flask.jsonify(**d)
+        return jsonify(**d)
 
     def add_card(self):
         if len(self.public_table.client_cards_2) != 0:
@@ -109,7 +109,7 @@ def start_game():
     if input_json["action"] == "register":
         cid = get_id()
         clients[cid] = Table(input_json["bid"])
-        return cid
+        return jsonify({"game_state": "begin_game", "id": cid})
 
 
 @app.route('/game-<client_id>', methods=['POST'])

@@ -21,6 +21,14 @@ Client requests may vary depending on game state
 ## Server
 Server response may vary depending on game state
 
+**Begin Game**
+```javascript
+    ID
+    {
+        "game_state": "begin_game",
+        "id": int
+    }
+```
 **In Game**
 ```javascript
     TableInGame
