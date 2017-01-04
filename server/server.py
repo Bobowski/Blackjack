@@ -1,6 +1,7 @@
 from random import shuffle
 
-from flask import Flask, request, jsonify
+import flask
+from flask import Flask, request
 
 import json
 
@@ -32,53 +33,80 @@ class Deck:
         return self.cards.pop()
 
 
+class Hand:
+    def __init__(self, cards = []):
+        self.cards = []
+        self.playing = True
+
+    def add_card(self, card):
+        self.cards.append(card)
+
+    def get_card(self, deck):
+        if self.playing:
+            self.cards.append(deck.get_card())
+
+    def count_card(self):
+        count =0
+        for x in self.cards:
+            count += x
+        return count
+
+    def try_split(self):
+        if len(self.cards) == 2 and self.cards[0] == self.cards[1]:
+                return self.cards.pop()
+        return None
+
 class Table:
-    def __init__(self, bid, id):
+    def __init__(self, bid):
         self.insurance = 0
-        self.state = 0
-        self.client_cards_1 = []
-        self.client_cards_2 = []
+        self.is_first_move = True
+        self.client_hands = []
+        self.client_hands.append(Hand())
         self.bid = bid
         self.deck = Deck()
         self.croupier_card = self.deck.get_card()
-        self.public_table = PublicTable(self.deck, bid, id)
         self.add_card()
         self.add_card()
-        self.game_state = 0
+        self.game_state = "begin_game"
 
-    def to_json(self, bid):
-        d = {'insurance': 0, 'state': 0, 'client_cards_1': self.client_cards_1, 'client_cards_2': self.client_cards_2,
-             'bid': self.bid
-             'croupier_cards': self.croupier_card}
-        return jsonify(**d)
+    def to_json(self):
+        d = {'insurance': 0, 'state': 0, 'client_hands': self.client_hands, 'bid': self.bid, 'croupier_cards': self.croupier_card}
+        return flask.jsonify(**d)
+
+    # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
 
     def add_card(self):
-        if len(self.public_table.client_cards_2) != 0:
-            self.public_table.client_cards_2.append(self.deck.get_card())
-        self.public_table.client_cards_1.append(self.deck.get_card())
-        self.game_state = 1
+        if len(self.client_hands) == 2:
+            if self.client_hands[1].playing:
+                self.client_hands[1].append(self.deck.get_card())
+                if self.client_hands[1].count_card > 21:
+                    self.client_hands[1].playing=False
+        if self.client_hands[0].playing:
+            self.client_hands[0].append(self.deck.get_card())
+            if self.client_hands[0].count_card > 21:
+                self.client_hands[0].playing=False
+        self.game_state = "in_game"
 
     def double(self):
-        if self.game_state == 0:
-            self.public_table.bid *= 2
+        if self.game_state == "begin_game":
+            self.bid *= 2
         self.add_card()
-        self.game_state = 1
 
     def split(self):
-        if self.game_state == 0:
-            if len(self.public_table.client_cards_1) == 2 and self.public_table.client_cards_1[0].get_rank() == \
-                    self.public_table.client_cards_1[1].get_rank():
-                self.public_table.client_cards_2.append(self.public_table.client_cards_1.pop())
+        t=self.client_hands[0].try_split
+        if t is not None:
+            self.client_hands.append(Hand())
+            self.client_hands[1].cards[0].append(t)
+
 
     def insure(self):
-        if self.game_state == 0:
-            if len(self.public_table.croupier_cards) == 1 and (
-                            self.public_table.croupier_cards[0].get_rank() == 10 or
-                            self.public_table.croupier_cards[0].get_rank() == 11):
-                self.public_table.insurance = True
+        if self.game_state == "begin_game":
+            if len(self.croupier_cards) == 1 and (self.croupier_cards[0].get_rank() == 10 or self.croupier_cards[0].get_rank() == 11):
+                self.insurance = True
 
     def pas(self):
-        return 0;
+        #TODO pasowanie tylko jednej ręki
+        return 0
 
 
 # I don't know if this belong to server or client ;p object -> JSON
