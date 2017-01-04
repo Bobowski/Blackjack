@@ -3,7 +3,7 @@
 Client requests may vary depending on game state
 
 **Begin game**
-```json
+```javascript
     ActionBegin
     {
         "action": string //must be "register",
@@ -11,7 +11,7 @@ Client requests may vary depending on game state
     }
 ```
 **In game**
-```json
+```javascript
     ActionInGame
     {
         "action": string //one of the following "split", "insure", "double", "take", "pass"
@@ -22,7 +22,7 @@ Client requests may vary depending on game state
 Server response may vary depending on game state
 
 **In Game**
-```json
+```javascript
     TableInGame
     {
         "game_state": "in_game",
@@ -33,7 +33,7 @@ Server response may vary depending on game state
     }
 ```
 **End Game**
-```json
+```javascript
     TableEndGame
     {
         "game_state": "end_game",
@@ -44,13 +44,13 @@ Server response may vary depending on game state
 
 
 ## Other structures
-```json
+```javascript
     Hand
     {
         "cards": [Card]
     }
 ```
-```json
+```javascript
     Card
     {
         "color": string, //onr of the following "Diamonds", "Hearts", "Clubs", "Spades"
