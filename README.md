@@ -63,19 +63,15 @@ Client posts requests to different URL and recieves PublicTable structure packed
     def get_card(self):
       return self.cards.pop()
 ```
+
 ```python
-  class PublicTable:
-    def __init__(self, bid):
+  class Table:
+    def __init__(self, c, bid):
       self.insurance = 0
       self.state = 0
       self.client_cards_1 = []
       self.client_cards_2 = []
       self.bid = bid
-      self.croupier_cards = [c,] 
-```
-```python
-  class Table:
-    def __init__(self, c, bid):
       self.deck = Deck()
       self.croupier_card = self.deck.get_card()
       self.public_table = PublicTable(self.deck, bid)
@@ -83,6 +79,11 @@ Client posts requests to different URL and recieves PublicTable structure packed
       self.add_card()
       self.game_state = 0
      
+    def to_json(self, bid):
+      d={'insurance' : 0, 'state' : 0, 'client_cards_1' : self.client_cards_1 , 'client_cards_2' : self.client_cards_2, 'bid':  self.bid
+      'croupier_cards': self.croupier_card }
+      return flask.jsonify(**d)
+    
     def add_card(self):
       if len(self.public_table.client_cards_2) != 0:
         self.public_table.client_cards_2.append(self.deck.get_card())
