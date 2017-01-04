@@ -14,23 +14,23 @@ Client posts requests to different URL and recieves PublicTable structure packed
     * Message: '[bid]'
     * Result: Server generates new ID for client and creates new Table structure.    
   2. **Split** *(Optional, only if it's the first move)*
-    * URL: http://<server>:<port>/game-[client ID]
-    * Message: 'SPLIT'
+    * URL: http://[server]:[port]/game-[client ID]
+    * Message:
     * Result: If player has two equal cards, server splits player card set into two separate sets. From now on player has two card sets.
   3. **Insure** *(Optional, only if it's the first move)*
-    * URL: http://<server>:<port>/game-[client ID]
+    * URL: http://[server]:[port]/game-[client ID]
     * Message: 'INSURE'
     * Result: If croupier has ace or 10, server marks boolean insured in Table. If croupier wins, client receives his bid back. 
   4. **Double** *(Optional, only if it's the first move)*
-    * URL: http://<server>:<port>/game-[client ID]
+    * URL: http://[server]:[port]/game-[client ID]
     * Message: 'DOUBLE'
     * Result: Player doubles his bid.
   5. **Take**
-    * URL: http://<server>:<port>/game-[client ID]
+    * URL: http://[server]:[port]/game-[client ID]
     * Message: 'TAKE'
     * Result: Player receives new card.
   6. **Pass**
-    * URL: http://<server>:<port>/game-[client ID]
+    * URL: http://[server]:[port]/game-[client ID]
     * Message: 'PASS'
     * Result: Game ends. Croupier makes his moves, and server evaluates who wins.
     
