@@ -149,7 +149,8 @@ actions = {
     "split": Table.split,
     "double": Table.double,
     "insure": Table.insure,
-    "pas": Table.pas
+    "pas": Table.pas,
+    "get": Table.add_card
 }
 
 app = Flask(__name__)

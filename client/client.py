@@ -1,4 +1,5 @@
 import requests
+import os
 
 server = "http://localhost:5000/"
 
@@ -40,24 +41,66 @@ def insure(gid):
     return js
 
 
+def get(gid):
+    js = requests.post(server + "game-" + str(gid), json={"header": "get"}).json()
+    if js["header"] == "error":
+        raise Exception(js["message"])
+    return js
+
+
+
+def cls():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+ranks = {
+    1: "2",
+    2: "3",
+    3: "4",
+    4: "5",
+    5: "6",
+    6: "7",
+    7: "8",
+    8: "9",
+    9: "10",
+    10: "Jack",
+    11: "Queen",
+    12: "King",
+    13: "Ace"
+}
+colors = {
+    "D": "Diamonds",
+    "S": "Spades",
+    "H": "Hearts",
+    "C": "Clubs"
+}
+
 gid = enter_game()
 actions = {
     "split": split,
     "double": double,
     "pas": pas,
-    "insure": insure
+    "insure": insure,
+    "get": get
 }
-print("Game started (id " + str(gid) + ")")
 while run:
     command = input()
+    cls()
+    print("Game started (id " + str(gid) + ")")
     try:
         js = actions[command](gid)
         if js["header"] == "in_game":
-            #wyswietlic stan stolu czytalnie, json jak w specyfikacji
-            print("insurance: "+str(js["insurance"]))
-            print("bid: "+str(js["bid"]) )
-            print("hands: "+str(js["hands"]))
-            print("bid: "+str(js["bid"]))
+            print("insurance: " + str(js["insurance"]))
+            print("bid: " + str(js["bid"]))
+            hands = js["hands"]
+            print()
+            for hand in hands:
+                print("hand: ")
+                for card in hand["cards"]:
+                    print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
+            print("\ncroupier: ")
+            for card in js["croupier"]["cards"]:
+                print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
     except Exception as e:
         print("Error: " + str(e))
 
