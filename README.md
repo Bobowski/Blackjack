@@ -1,5 +1,6 @@
 # Blackjack
 Simple client-server Blackjack game.
+We used https://pl.wikipedia.org/wiki/Blackjack
 
 ##Funcionality
 Client can play Blackjack with table. There is only one table for each client and one deck for each game.
