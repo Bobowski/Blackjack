@@ -2,6 +2,22 @@ from random import shuffle
 
 from flask import Flask, request, jsonify
 
+#TODO fill this dict with correct values
+cards_points = {
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10,
+    11: 11,
+    12: 12,
+    13: 13
+}
 
 class Card:
     def __init__(self, color, rank, face_up=False):
@@ -54,10 +70,7 @@ class Hand:
             self.cards.append(deck.get_card())
 
     def count_cards(self):
-        count = 0
-        for x in self.cards:
-            count += x.rank
-        return count
+        return sum([cards_points[c] for c in self.cards])
 
     def try_split(self):
         if len(self.cards) == 2 and self.cards[0] == self.cards[1]:
