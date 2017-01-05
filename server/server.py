@@ -79,10 +79,8 @@ class Table:
         self.game_state = "begin_game"
 
     def to_json(self):
-        #TODO: make it compatible with docs
-        d = {'insurance': 0, 'state': 0, 'client_hands': self.client_hands, 'bid': self.bid,
-             'croupier_cards': self.croupier_card}
-        return jsonify(**d)
+        return jsonify({"header": "in_game", "insurance": self.insurance, "hands": self.client_hands, "bid": self.bid,
+                        "croupier": self.croupier_card})
 
     # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
 
@@ -120,21 +118,10 @@ class Table:
         return 0
 
 
-# I don't know if this belong to server or client ;p object -> JSON
-def toJSON(obj):
-    return json.dumps(obj, default=lambda o: o.__dict__, sort_keys=True, indent=2)
-
-
 # Game creation
 
 clients = {}
-last_id = -1
-actions = {"split": Table.split}  # TODO
-
-
-def get_id():
-    return 0
-
+actions = {"split": Table.split, "double": Table.double, "insure": Table.insure, "pas": Table.pas}
 
 app = Flask(__name__)
 
@@ -144,23 +131,42 @@ app = Flask(__name__)
 
 # Game beginning
 
-#TODO exception handling
+def error(msg):
+    return jsonify({"header": "error", "message": msg})
+
+
+last_id = -1
+
+
+def get_id():
+    global last_id
+    last_id += 1
+    return last_id
+
 
 @app.route('/begin', methods=['POST'])
 def start_game():
     input_json = request.get_json()
     if input_json["header"] == "register":
-        cid = get_id()
-        clients[cid] = Table(input_json["bid"])
-        print("hdwukhdka")
-        return jsonify({"header": "begin_game", "id": cid})
+        try:
+            cid = get_id()
+            clients[cid] = Table(input_json["bid"])
+            return jsonify({"header": "begin_game", "id": cid})
+        except Exception as e:
+            return error(str(e))
+
+    else:
+        return error("Invalid command")
 
 
 @app.route('/game-<client_id>', methods=['POST'])
 def handle_request(client_id):
     input_json = request.get_json()
-    actions[input_json["action"]](clients[client_id])
-    return clients[client_id].to_json()
+    try:
+        actions[input_json["action"]](clients[client_id])
+        return clients[client_id].to_json()
+    except Exception as e:
+        return error(str(e))
 
 
 if __name__ == '__main__':

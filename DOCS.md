@@ -44,7 +44,7 @@ TableInGame
     "insurance": number,
     "hands": [Hand],
     "bid": number,
-    "croupier": Hand,
+    "croupier": Hand
 }
 ```
 **End Game**
