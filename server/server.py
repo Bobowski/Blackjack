@@ -4,11 +4,12 @@ from flask import Flask, request, jsonify
 
 
 class Card:
-    def __init__(self, color, rank):
+    def __init__(self, color, rank, face_up=False):
         # color - 'D' Diamonds, 'C' Clubs, 'H' Hearts, 'S' Spades
         # rank - number from 1 to 13
         self.color = color
         self.rank = rank
+        self.face_up = face_up
 
     def get_rank(self):
         return self.rank
@@ -43,16 +44,16 @@ class Hand:
             raise Exception("Variable is not Card")
         self.cards = [card]
 
-    def add_card(self, card):
+    def add_card(self, card, face_up=True):
         if not isinstance(card, Card):
             raise Exception("Variable is not Card")
-        self.cards.append(card)
+        self.cards.append(Card(card.color, card.rank, face_up))
 
     def get_card(self, deck):
         if self.playing:
             self.cards.append(deck.get_card())
 
-    def count_card(self):
+    def count_cards(self):
         count = 0
         for x in self.cards:
             count += x.rank
@@ -67,7 +68,7 @@ class Hand:
         return self.playing
 
     def to_dict(self):
-        return {"cards": [a.to_dict() for a in self.cards]}
+        return {"cards": [a.to_dict() for a in self.cards if a.face_up]}
 
 
 class Table:
@@ -78,7 +79,9 @@ class Table:
         self.client_hands.append(Hand())
         self.bid = bid
         self.deck = Deck()
-        self.croupier_card = self.deck.get_card()
+        self.croupier_hand = Hand()
+        self.croupier_hand.add_card(self.deck.get_card(), False)
+        self.croupier_hand.add_card(self.deck.get_card())
         self.add_card()
         self.add_card()
         self.game_state = "begin_game"
@@ -86,7 +89,7 @@ class Table:
     def to_json(self):
         return jsonify(
             {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
-             "bid": self.bid})
+             "bid": self.bid, "croupier": self.croupier_hand.to_dict()})
 
     # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
 
@@ -94,7 +97,7 @@ class Table:
         for hand in self.client_hands:
             if hand.playing:
                 hand.add_card(self.deck.get_card())
-                if hand.count_card() > 21:
+                if hand.count_cards() > 21:
                     hand.playing = False
         self.game_state = "in_game"
 
