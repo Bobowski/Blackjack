@@ -2,21 +2,20 @@ from random import shuffle
 
 from flask import Flask, request, jsonify
 
-#TODO fill this dict with correct values
 cards_points = {
-    1: 1,
-    2: 2,
-    3: 3,
-    4: 4,
-    5: 5,
-    6: 6,
-    7: 7,
-    8: 8,
-    9: 9,
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 6,
+    6: 7,
+    7: 8,
+    8: 9,
+    9: 10,
     10: 10,
-    11: 11,
-    12: 12,
-    13: 13
+    11: 10,
+    12: 10,
+    13: 11
 }
 
 class Card:
@@ -70,6 +69,17 @@ class Hand:
             self.cards.append(deck.get_card())
 
     def count_cards(self):
+        aces = len([x for x in self.cards if x.rank == 11])
+        value = sum([x.rank for x in self.cards])
+
+        if value <= 21 or aces == 0:
+            return value
+
+        while aces > 0 and value > 21:
+            value -= 10 # value = value - 11 (ace) + 1 (other value ace)
+            aces -= 1
+            return value
+
         return sum([cards_points[c.rank] for c in self.cards])
 
     def try_split(self):
@@ -100,12 +110,15 @@ class Table:
         self.game_state = "begin_game"
         self.has_split = False
         self.has_double = False
+#TODO: sprawdzic, czy to tak
+        self.client_card = self.croupier_hand[0].card[0]
 
     def to_dict(self):
-        return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
+        if self.game_state == "end_game":
+            return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
              "bid": self.bid, "croupier": self.croupier_hand.to_dict()}
-
-    # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
+        return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
+                "bid": self.bid, "croupier": self.croupier_card} 
 
     def add_card(self):
         for hand in self.client_hands:
