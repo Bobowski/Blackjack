@@ -70,7 +70,7 @@ class Hand:
             self.cards.append(deck.get_card())
 
     def count_cards(self):
-        return sum([cards_points[c] for c in self.cards])
+        return sum([cards_points[c.rank] for c in self.cards])
 
     def try_split(self):
         if len(self.cards) == 2 and self.cards[0] == self.cards[1]:
@@ -197,6 +197,7 @@ def start_game():
         try:
             cid = get_id()
             clients[cid] = Table(input_json["bid"])
+            print("dadawda")
             return jsonify({"header": "begin_game", "id": cid, "table": clients[cid].to_dict()})
         except Exception as e:
             return error(str(e))
