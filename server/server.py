@@ -99,6 +99,13 @@ class Table:
                 hand.add_card(self.deck.get_card())
                 if hand.count_cards() > 21:
                     hand.playing = False
+        end = True
+        for hand in self.client_hands:
+            if hand.playing:
+                end = False
+                break
+        if end:
+            self.end_game()
         self.game_state = "in_game"
 
     def double(self):
@@ -113,13 +120,28 @@ class Table:
 
     def insure(self):
         if self.game_state == "begin_game":
-            if len(self.croupier_cards) == 1 and (
-                            self.croupier_cards[0].get_rank() == 10 or self.croupier_cards[0].get_rank() == 11):
+            if len(self.croupier_hand.cards) == 2 and \
+                    (self.croupier_hand.cards[1].get_rank() == 10
+                     or self.croupier_hand.cards[1].get_rank() == 11):
                 self.insurance = True
 
-    def pas(self):
-        # TODO pasowanie tylko jednej ręki
+    def pas(self, hand_number=0):
+        if hand_number < len(self.client_hands):
+            self.client_hands[hand_number].playing = False
+        else:
+            raise Exception("Hand number out of bounds.")
+        end = True
+        for hand in self.client_hands:
+            if hand.playing:
+                end = False
+                break
+        if end:
+            self.end_game()
         return 0
+
+    def end_game(self):
+        self.game_state = "end_game"
+        #TODO count cards or smth
 
 
 clients = {}
