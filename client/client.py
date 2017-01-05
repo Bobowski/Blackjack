@@ -2,7 +2,6 @@ import requests
 
 server = "http://localhost:5000/"
 
-
 run = True
 
 
@@ -14,32 +13,31 @@ def enter_game():
 
 
 def split(gid):
-    js = requests.post(server + str(gid), json={"header": "split"}).json()
+    js = requests.post(server + "game-" + str(gid), json={"header": "split"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def double(gid):
-    js = requests.post(server + str(gid), json={"double": "split"}).json()
+    js = requests.post(server + "game-" + str(gid), json={"header": "double"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def pas(gid):
-    js = requests.post(server + str(gid), json={"pas": "split"}).json()
+    js = requests.post(server + "game-" + str(gid), json={"header": "pas"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def insure(gid):
-    js = requests.post(server + str(gid), json={"insure": "split"}).json()
+    js = requests.post(server + "game-" + str(gid), json={"header": "insure"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
-
 
 
 gid = enter_game()
@@ -49,11 +47,17 @@ actions = {
     "pas": pas,
     "insure": insure
 }
+print("Game started (id " + str(gid) + ")")
 while run:
     command = input()
     try:
-        actions[command](gid)
+        js = actions[command](gid)
+        if js["header"] == "in_game":
+            print("insurance: "+str(js["insurance"]))
+            # for i in range(2):
+            #     print("hand"+str(i)+": "+js["hands"][i])
+            print("bid: "+str(js["bid"]))
     except Exception as e:
-        print(str(e))
+        print("Error: " + str(e))
 
 print(gid)

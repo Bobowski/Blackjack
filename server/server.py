@@ -1,9 +1,6 @@
 from random import shuffle
 
-import flask
 from flask import Flask, request, jsonify
-
-import json
 
 
 class Card:
@@ -15,6 +12,9 @@ class Card:
 
     def get_rank(self):
         return self.rank
+
+    def to_dict(self):
+        return {"color": self.color, "rank": self.rank}
 
 
 class Deck:
@@ -39,11 +39,13 @@ class Hand:
         if card is None:
             self.cards = []
             return
-        if isinstance(card, Card):
+        if not isinstance(card, Card):
             raise Exception("Variable is not Card")
         self.cards = [card]
 
     def add_card(self, card):
+        if not isinstance(card, Card):
+            raise Exception("Variable is not Card")
         self.cards.append(card)
 
     def get_card(self, deck):
@@ -64,6 +66,9 @@ class Hand:
     def is_playing(self):
         return self.playing
 
+    def to_dict(self):
+        return {"cards": [a.to_dict() for a in self.cards]}
+
 
 class Table:
     def __init__(self, bid):
@@ -79,21 +84,18 @@ class Table:
         self.game_state = "begin_game"
 
     def to_json(self):
-        return jsonify({"header": "in_game", "insurance": self.insurance, "hands": self.client_hands, "bid": self.bid,
-                        "croupier": self.croupier_card})
+        return jsonify(
+            {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
+             "bid": self.bid})
 
     # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
 
     def add_card(self):
-        if len(self.client_hands) == 2:
-            if self.client_hands[1].playing:
-                self.client_hands[1].add_card(self.deck.get_card())
-                if self.client_hands[1].count_card() > 21:
-                    self.client_hands[1].playing = False
-        if self.client_hands[0].playing:
-            self.client_hands[0].add_card(self.deck.get_card())
-            if self.client_hands[0].count_card() > 21:
-                self.client_hands[0].playing = False
+        for hand in self.client_hands:
+            if hand.playing:
+                hand.add_card(self.deck.get_card())
+                if hand.count_card() > 21:
+                    hand.playing = False
         self.game_state = "in_game"
 
     def double(self):
@@ -102,10 +104,9 @@ class Table:
         self.add_card()
 
     def split(self):
-        t = self.client_hands[0].try_split
+        t = self.client_hands[0].try_split()
         if t is not None:
-            self.client_hands.append(Hand())
-            self.client_hands[1].cards[0].append(t)
+            self.client_hands.append(Hand(t))
 
     def insure(self):
         if self.game_state == "begin_game":
@@ -118,10 +119,13 @@ class Table:
         return 0
 
 
-# Game creation
-
 clients = {}
-actions = {"split": Table.split, "double": Table.double, "insure": Table.insure, "pas": Table.pas}
+actions = {
+    "split": Table.split,
+    "double": Table.double,
+    "insure": Table.insure,
+    "pas": Table.pas
+}
 
 app = Flask(__name__)
 
@@ -163,8 +167,9 @@ def start_game():
 def handle_request(client_id):
     input_json = request.get_json()
     try:
-        actions[input_json["action"]](clients[client_id])
-        return clients[client_id].to_json()
+        cid = int(client_id)
+        actions[input_json["header"]](clients[cid])
+        return clients[cid].to_json()
     except Exception as e:
         return error(str(e))
 
