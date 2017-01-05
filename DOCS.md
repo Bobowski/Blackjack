@@ -33,7 +33,8 @@ Error
 ID
 {
     "header": "begin_game",
-    "id": number
+    "id": number,
+    "table": TableInGame
 }
 ```
 **In Game**

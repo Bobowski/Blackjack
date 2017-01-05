@@ -86,10 +86,9 @@ class Table:
         self.add_card()
         self.game_state = "begin_game"
 
-    def to_json(self):
-        return jsonify(
-            {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
-             "bid": self.bid, "croupier": self.croupier_hand.to_dict()})
+    def to_dict(self):
+        return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
+             "bid": self.bid, "croupier": self.croupier_hand.to_dict()}
 
     # TODO: co ma być zwracane dla kard krupiera w zależności od stanu gry (tworzyć zmienną jedna karta do zwrotu, czy jak będzie)
 
@@ -181,7 +180,7 @@ def start_game():
         try:
             cid = get_id()
             clients[cid] = Table(input_json["bid"])
-            return jsonify({"header": "begin_game", "id": cid})
+            return jsonify({"header": "begin_game", "id": cid, "table": clients[cid].to_dict()})
         except Exception as e:
             return error(str(e))
 
@@ -195,7 +194,7 @@ def handle_request(client_id):
     try:
         cid = int(client_id)
         actions[input_json["header"]](clients[cid])
-        return clients[cid].to_json()
+        return jsonify(clients[cid].to_dict())
     except Exception as e:
         return error(str(e))
 

@@ -6,11 +6,11 @@ server = "http://localhost:5000/"
 run = True
 
 
-def enter_game():
-    js = requests.post(server + "begin", json={"header": "register", "bid": 10}).json()
+def enter_game(bid):
+    js = requests.post(server + "begin", json={"header": "register", "bid": bid}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
-    return js["id"]
+    return js
 
 
 def split(gid):
@@ -47,7 +47,18 @@ def get(gid):
         raise Exception(js["message"])
     return js
 
-
+def print_table(js):
+    print("insurance: " + str(js["insurance"]))
+    print("bid: " + str(js["bid"]))
+    hands = js["hands"]
+    print()
+    for hand in hands:
+        print("hand: ")
+        for card in hand["cards"]:
+            print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
+    print("\ncroupier: ")
+    for card in js["croupier"]["cards"]:
+        print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
 
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -75,7 +86,8 @@ colors = {
     "C": "Clubs"
 }
 
-gid = enter_game()
+init_js = enter_game(10)
+gid = init_js["id"]
 actions = {
     "split": split,
     "double": double,
@@ -83,24 +95,15 @@ actions = {
     "insure": insure,
     "get": get
 }
+print("Game started (id " + str(gid) + ")")
+print_table(init_js["table"])
 while run:
     command = input()
     cls()
-    print("Game started (id " + str(gid) + ")")
     try:
         js = actions[command](gid)
         if js["header"] == "in_game":
-            print("insurance: " + str(js["insurance"]))
-            print("bid: " + str(js["bid"]))
-            hands = js["hands"]
-            print()
-            for hand in hands:
-                print("hand: ")
-                for card in hand["cards"]:
-                    print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
-            print("\ncroupier: ")
-            for card in js["croupier"]["cards"]:
-                print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
+            print_table(js)
     except Exception as e:
         print("Error: " + str(e))
 
