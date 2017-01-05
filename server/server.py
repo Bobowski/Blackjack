@@ -98,6 +98,8 @@ class Table:
         self.add_card()
         self.add_card()
         self.game_state = "begin_game"
+        self.has_split = False
+        self.has_double = False
 
     def to_dict(self):
         return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
@@ -121,20 +123,22 @@ class Table:
         self.game_state = "in_game"
 
     def double(self):
-        if self.game_state == "begin_game":
+        if self.game_state == "begin_game" and self.has_double == False:
             self.bid *= 2
+            self.has_double = True
         self.add_card()
 
     def split(self):
-        t = self.client_hands[0].try_split()
-        if t is not None:
-            self.client_hands.append(Hand(t))
+        if self.has_split is False and len(self.client_hands) == 0 and self.game_state == "begin_game":
+            t = self.client_hands[0].try_split()
+            if t is not None:
+                self.client_hands.append(Hand(t))
+                self.has_split = True
 
     def insure(self):
-        if self.game_state == "begin_game":
+        if self.game_state == "begin_game" and self.insurance==0:
             if len(self.croupier_hand.cards) == 2 and \
-                    (self.croupier_hand.cards[1].get_rank() == 10
-                     or self.croupier_hand.cards[1].get_rank() == 11):
+                    (self.croupier_hand.cards[1].get_rank() == 10 or self.croupier_hand.cards[1].get_rank() == 11):
                 self.insurance = True
 
     def pas(self, hand_number=0):
