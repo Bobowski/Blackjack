@@ -53,9 +53,10 @@ while run:
     try:
         js = actions[command](gid)
         if js["header"] == "in_game":
+            #wyswietlic stan stolu czytalnie, json jak w specyfikacji
             print("insurance: "+str(js["insurance"]))
-            # for i in range(2):
-            #     print("hand"+str(i)+": "+js["hands"][i])
+            print("bid: "+str(js["bid"]) )
+            print("hands: "+str(js["hands"]))
             print("bid: "+str(js["bid"]))
     except Exception as e:
         print("Error: " + str(e))
