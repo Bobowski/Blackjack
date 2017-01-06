@@ -47,6 +47,12 @@ class Deck:
         shuffle(self.cards)
 
     def get_card(self):
+        if len(self.cards) == 0:
+            colors = ['D', 'C', 'H', 'S']
+            for c in colors:
+                for r in range(1, 14):
+                    self.cards.append(Card(c, r))
+            shuffle(self.cards)
         return self.cards.pop()
 
 
@@ -64,10 +70,6 @@ class Hand:
         if not isinstance(card, Card):
             raise Exception("Variable is not Card")
         self.cards.append(Card(card.color, card.rank, face_up))
-
-    def get_card(self, deck):
-        if self.playing:
-            self.cards.append(deck.get_card())
 
     def count_cards(self):
         aces = len([x for x in self.cards if x.rank == 13])
@@ -93,128 +95,193 @@ class Hand:
         return {"cards": [a.to_dict() for a in self.cards if a.face_up]}
 
 
-class Table:
-    def __init__(self, bid):
-        self.winner = ""  # TODO think of better solution
+class Player:
+    def __init__(self, cash):
+        self.table = None
+        self.hands = None
+        self.has_double = None
+        self.has_insurance = None
+        self.has_split = None
+        self.game_state = "awaiting"
+        self.bid = None
+        self.balance = cash
 
-        self.game_state = "begin_game"
-        self.is_first_move = True
-        self.client_hands = []
-        self.client_hands.append(Hand())
-        self.bid = bid
-        self.deck = Deck()
-        self.croupier_hand = Hand()
-        self.croupier_hand.add_card(self.deck.get_card(), False)
-        self.croupier_hand.add_card(self.deck.get_card())
-        self.add_card()
-        self.add_card()
-        self.has_split = False
-        self.has_double = False
-        self.has_insurance = False
-        # TODO: sprawdzic, czy to tak
-        # TODO: make Monika write comments in english and investigate TODO above
-        # self.client_card = self.croupier_hand[0].card[0]
+    def join_table(self, table, bid):
+        if not isinstance(table, Table):
+            raise Exception("Variable is not table!")
+        try:
+            table.start()
+            self.game_state = "begin_game"
+            self.table = table
+            self.hands = []
+            self.hands.append(Hand())
+            self.hands[0].add_card(self.table.deck.get_card())
+            self.hands[0].add_card(self.table.deck.get_card())
+            self.has_double = False
+            self.has_insurance = False
+            self.has_split = False
+            self.bid = bid
+            self.balance -= bid
+        except Exception as e:
+            raise e
+
+    def get_card(self):
+        if self.table is not None and self.game_state != "end_game":
+            for hand in self.hands:
+                if hand.playing:
+                    hand.add_card(self.table.deck.get_card())
+                    if hand.count_cards() >= 21:
+                        hand.playing = False
+            end = True
+            for hand in self.hands:
+                if hand.playing:
+                    end = False
+                    break
+            if end:
+                self.end_game()
+            else:
+                self.game_state = "in_game"
+
+    def double(self):
+        if self.table is not None:
+            if not self.has_double and self.game_state == "begin_game":
+                self.bid *= 2
+                self.has_double = True
+                self.get_card()
+            else:
+                raise Exception("Cannot double")
+
+    def split(self):
+        if self.table is not None:
+            if not self.has_split and len(self.hands) == 1 and self.game_state == "begin_game":
+                t = self.hands[0].try_split()
+                if t is not None:
+                    self.hands.append(Hand(t))
+                    self.has_split = True
+                else:
+                    raise Exception("Cannot split - cards are different")
+            else:
+                raise Exception("Cannot split")
+
+    # TODO check if insurance is only against Blackjack
+    def insure(self):
+        if self.table is not None:
+            if not self.has_insurance and self.game_state == "begin_game":
+                if self.table.can_insure():
+                    self.has_insurance = True
+                else:
+                    raise Exception("Cannot insure")
+            else:
+                raise Exception("Cannot insure")
+
+    def pas(self, hand_number=0):
+        if self.table is not None and self.game_state != "end_game":
+            if hand_number >= len(self.hands):
+                raise Exception("Hand number out of bounds.")
+            if not self.hands[hand_number].playing:
+                raise Exception("Hand already passed.")
+            self.hands[hand_number].playing = False
+            end = True
+            for hand in self.hands:
+                if hand.playing:
+                    end = False
+                    break
+            if end:
+                self.end_game()
+            return 0
+
+    def end_game(self):
+        self.game_state = "end_game"
+        best_hand = None
+        for hand in self.hands:
+            if best_hand is None or best_hand.count_cards() < hand.count_cards() <= 21:
+                best_hand = hand
+        self.table.end_game(best_hand)
+        if self.table.winner == "player":
+            self.balance += 2*self.bid
 
     def to_dict(self):
         if self.game_state == "end_game":
             return {
                 "header": "end_game",
-                "winner": self.winner,
-                "hands": [a.to_dict() for a in self.client_hands],
-                "croupier": self.croupier_hand.to_dict()
+                "winner": self.table.winner,
+                "hands": [a.to_dict() for a in self.hands],
+                "croupier": self.table.croupier_hand.to_dict()
             }
         return {
             "header": "in_game",
             "insurance": self.has_insurance,
             "bid": self.bid,
-            "hands": [a.to_dict() for a in self.client_hands],
-            "croupier": self.croupier_hand.to_dict()
+            "hands": [a.to_dict() for a in self.hands],
+            "croupier": self.table.croupier_hand.to_dict()
         }
 
-    def add_card(self):
-        for hand in self.client_hands:
-            if hand.playing:
-                hand.add_card(self.deck.get_card())
-                if hand.count_cards() >= 21:
-                    hand.playing = False
-        end = True
-        for hand in self.client_hands:
-            if hand.playing:
-                end = False
-                break
-        if end:
-            self.end_game()
-        else:
-            self.game_state = "in_game"
+    def quit_table(self):
+        self.table.quit()
+        self.table = None
+        self.hands = None
+        self.has_double = None
+        self.has_insurance = None
+        self.has_split = None
+        self.game_state = "awaiting"
+        self.bid = None
 
-    def double(self):
-        if not self.has_double and self.game_state == "begin_game":
-            self.bid *= 2
-            self.has_double = True
-            self.add_card()
-        else:
-            raise Exception("Cannot double")
 
-    def split(self):
-        if not self.has_split and len(self.client_hands) == 1 and self.game_state == "begin_game":
-            t = self.client_hands[0].try_split()
-            if t is not None:
-                self.client_hands.append(Hand(t))
-                self.has_split = True
-            else:
-                raise Exception("Cannot split - cards are different")
-        else:
-            raise Exception("Cannot split")
+class Table:
+    def __init__(self):
+        self.winner = None  # TODO think of better solution
+        self.game_state = "awaiting"
+        self.deck = Deck()
+        self.croupier_hand = None
+
+    def start(self):
+        if self.game_state == "begin_game" or self.game_state == "in_game":
+            raise Exception("Table occupied")
+        self.game_state = "begin_game"
+        self.croupier_hand = Hand()
+        self.croupier_hand.add_card(self.deck.get_card(), False)
+        self.croupier_hand.add_card(self.deck.get_card())
+
 
     # TODO check if insurance is only against Blackjack
-    def insure(self):
-        if not self.has_insurance and self.game_state == "begin_game":
+    def can_insure(self):
+        if self.game_state == "begin_game":
             if len(self.croupier_hand.cards) == 2 and \
                     (self.croupier_hand.cards[1].get_rank() == 10 or self.croupier_hand.cards[1].get_rank() == 11):
-                self.has_insurance = True
-            else:
-                raise Exception("Cannot insure")
-        else:
-            raise Exception("Cannot insure")
+                return True
+        return False
 
-    def pas(self, hand_number=0):
-        if hand_number >= len(self.client_hands):
-            raise Exception("Hand number out of bounds.")
-        if not self.client_hands[hand_number].playing:
-            raise Exception("Hand already passed.")
-        self.client_hands[hand_number].playing = False
-        end = True
-        for hand in self.client_hands:
-            if hand.playing:
-                end = False
-                break
-        if end:
-            self.end_game()
-        return 0
-
-    def end_game(self):
+    def end_game(self, player_hand):
         self.game_state = "end_game"
-        print("Game has ended")
-        player_best_hand = self.client_hands[0]
-        if len(self.client_hands) == 2 \
-                and 21 >= self.client_hands[1].count_cards() > self.client_hands[0].count_cards():
-            player_best_hand = self.client_hands[1]
+
+        if player_hand is None:
+            self.winner = "croupier"
+
         self.croupier_hand.cards[0].face_up = True
         while self.croupier_hand.count_cards() < 17:
             self.croupier_hand.add_card(self.deck.get_card())
-        if self.croupier_hand.count_cards() > player_best_hand.count_cards() or player_best_hand.count_cards() > 21:
+
+        if self.croupier_hand.count_cards() > player_hand.count_cards():
             self.winner = "croupier"
         else:
             self.winner = "player"
 
+    def quit(self):
+        self.winner = None  # TODO think of better solution
+        self.game_state = "awaiting"
+        self.croupier_hand = None
+
+
 
 clients = {}
+tables = {}
 actions = {
-    "split": Table.split,
-    "double": Table.double,
-    "insure": Table.insure,
-    "pas": Table.pas,
-    "get": Table.add_card
+    "split": Player.split,
+    "double": Player.double,
+    "insure": Player.insure,
+    "pas": Player.pas,
+    "get": Player.get_card,
+    "quit": Player.quit_table
 }
 
 app = Flask(__name__)
@@ -244,8 +311,8 @@ def start_game():
     if input_json["header"] == "register":
         try:
             cid = get_id()
-            clients[cid] = Table(input_json["bid"])
-            return jsonify({"header": "begin_game", "id": cid, "table": clients[cid].to_dict()})
+            clients[cid] = Player(input_json["cash"])
+            return jsonify({"header": "confirm_register", "id": cid})
         except Exception as e:
             return error(str(e))
 
@@ -253,12 +320,20 @@ def start_game():
         return error("Invalid command")
 
 
-@app.route('/game-<client_id>', methods=['POST'])
+@app.route('/player-<client_id>', methods=['POST'])
 def handle_request(client_id):
     input_json = request.get_json()
     try:
         cid = int(client_id)
-        actions[input_json["header"]](clients[cid])
+        if input_json["header"] == "begin_game":
+            tid = input_json["table_id"]
+            if tid not in tables.keys() or tables[tid] is not None:
+                tables[tid] = Table()
+            clients[cid].join_table(tables[tid], int(input_json["bid"]))
+        else:
+            actions[input_json["header"]](clients[cid])
+        if clients[cid].table is None:
+            raise Exception("You are not in a game")
         return jsonify(clients[cid].to_dict())
     except Exception as e:
         return error(str(e))
