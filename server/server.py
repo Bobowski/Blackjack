@@ -18,6 +18,7 @@ cards_points = {
     13: 11
 }
 
+
 class Card:
     def __init__(self, color, rank, face_up=False):
         # color - 'D' Diamonds, 'C' Clubs, 'H' Hearts, 'S' Spades
@@ -69,21 +70,19 @@ class Hand:
             self.cards.append(deck.get_card())
 
     def count_cards(self):
-        aces = len([x for x in self.cards if x.rank == 11])
-        value = sum([x.rank for x in self.cards])
+        aces = len([x for x in self.cards if x.rank == 13])
+        value = sum([cards_points[x.rank] for x in self.cards])
 
         if value <= 21 or aces == 0:
             return value
 
         while aces > 0 and value > 21:
-            value -= 10 # value = value - 11 (ace) + 1 (other value ace)
+            value -= 10  # value = value - 11 (ace) + 1 (other value ace)
             aces -= 1
-            return value
-
-        return sum([cards_points[c.rank] for c in self.cards])
+        return value
 
     def try_split(self):
-        if len(self.cards) == 2 and self.cards[0] == self.cards[1]:
+        if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
             return self.cards.pop()
         return None
 
@@ -96,7 +95,9 @@ class Hand:
 
 class Table:
     def __init__(self, bid):
-        self.insurance = 0
+        self.winner = ""  # TODO think of better solution
+
+        self.game_state = "begin_game"
         self.is_first_move = True
         self.client_hands = []
         self.client_hands.append(Hand())
@@ -107,24 +108,34 @@ class Table:
         self.croupier_hand.add_card(self.deck.get_card())
         self.add_card()
         self.add_card()
-        self.game_state = "begin_game"
         self.has_split = False
         self.has_double = False
-#TODO: sprawdzic, czy to tak
-        self.client_card = self.croupier_hand[0].card[0]
+        self.has_insurance = False
+        # TODO: sprawdzic, czy to tak
+        # TODO: make Monika write comments in english and investigate TODO above
+        # self.client_card = self.croupier_hand[0].card[0]
 
     def to_dict(self):
         if self.game_state == "end_game":
-            return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
-             "bid": self.bid, "croupier": self.croupier_hand.to_dict()}
-        return {"header": "in_game", "insurance": self.insurance, "hands": [a.to_dict() for a in self.client_hands],
-                "bid": self.bid, "croupier": self.croupier_card} 
+            return {
+                "header": "end_game",
+                "winner": self.winner,
+                "hands": [a.to_dict() for a in self.client_hands],
+                "croupier": self.croupier_hand.to_dict()
+            }
+        return {
+            "header": "in_game",
+            "insurance": self.has_insurance,
+            "bid": self.bid,
+            "hands": [a.to_dict() for a in self.client_hands],
+            "croupier": self.croupier_hand.to_dict()
+        }
 
     def add_card(self):
         for hand in self.client_hands:
             if hand.playing:
                 hand.add_card(self.deck.get_card())
-                if hand.count_cards() > 21:
+                if hand.count_cards() >= 21:
                     hand.playing = False
         end = True
         for hand in self.client_hands:
@@ -133,32 +144,45 @@ class Table:
                 break
         if end:
             self.end_game()
-        self.game_state = "in_game"
+        else:
+            self.game_state = "in_game"
 
     def double(self):
-        if self.game_state == "begin_game" and self.has_double == False:
+        if not self.has_double and self.game_state == "begin_game":
             self.bid *= 2
             self.has_double = True
-        self.add_card()
+            self.add_card()
+        else:
+            raise Exception("Cannot double")
 
     def split(self):
-        if self.has_split is False and len(self.client_hands) == 0 and self.game_state == "begin_game":
+        if not self.has_split and len(self.client_hands) == 1 and self.game_state == "begin_game":
             t = self.client_hands[0].try_split()
             if t is not None:
                 self.client_hands.append(Hand(t))
                 self.has_split = True
+            else:
+                raise Exception("Cannot split - cards are different")
+        else:
+            raise Exception("Cannot split")
 
+    # TODO check if insurance is only against Blackjack
     def insure(self):
-        if self.game_state == "begin_game" and self.insurance==0:
+        if not self.has_insurance and self.game_state == "begin_game":
             if len(self.croupier_hand.cards) == 2 and \
                     (self.croupier_hand.cards[1].get_rank() == 10 or self.croupier_hand.cards[1].get_rank() == 11):
-                self.insurance = True
+                self.has_insurance = True
+            else:
+                raise Exception("Cannot insure")
+        else:
+            raise Exception("Cannot insure")
 
     def pas(self, hand_number=0):
-        if hand_number < len(self.client_hands):
-            self.client_hands[hand_number].playing = False
-        else:
+        if hand_number >= len(self.client_hands):
             raise Exception("Hand number out of bounds.")
+        if not self.client_hands[hand_number].playing:
+            raise Exception("Hand already passed.")
+        self.client_hands[hand_number].playing = False
         end = True
         for hand in self.client_hands:
             if hand.playing:
@@ -170,7 +194,18 @@ class Table:
 
     def end_game(self):
         self.game_state = "end_game"
-        #TODO count cards or smth
+        print("Game has ended")
+        player_best_hand = self.client_hands[0]
+        if len(self.client_hands) == 2 \
+                and 21 >= self.client_hands[1].count_cards() > self.client_hands[0].count_cards():
+            player_best_hand = self.client_hands[1]
+        self.croupier_hand.cards[0].face_up = True
+        while self.croupier_hand.count_cards() < 17:
+            self.croupier_hand.add_card(self.deck.get_card())
+        if self.croupier_hand.count_cards() > player_best_hand.count_cards() or player_best_hand.count_cards() > 21:
+            self.winner = "croupier"
+        else:
+            self.winner = "player"
 
 
 clients = {}
@@ -210,7 +245,6 @@ def start_game():
         try:
             cid = get_id()
             clients[cid] = Table(input_json["bid"])
-            print("dadawda")
             return jsonify({"header": "begin_game", "id": cid, "table": clients[cid].to_dict()})
         except Exception as e:
             return error(str(e))
