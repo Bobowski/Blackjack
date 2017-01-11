@@ -2,21 +2,6 @@ from random import shuffle
 
 from flask import Flask, request, jsonify
 
-cards_points = {
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 5,
-    5: 6,
-    6: 7,
-    7: 8,
-    8: 9,
-    9: 10,
-    10: 10,
-    11: 10,
-    12: 10,
-    13: 11
-}
 
 
 class Card:
@@ -26,9 +11,6 @@ class Card:
         self.color = color
         self.rank = rank
         self.face_up = face_up
-
-    def get_rank(self):
-        return self.rank
 
     def to_dict(self):
         return {"color": self.color, "rank": self.rank}
@@ -72,14 +54,14 @@ class Hand:
         self.cards.append(Card(card.color, card.rank, face_up))
 
     def count_cards(self):
-        aces = len([x for x in self.cards if x.rank == 13])
-        value = sum([cards_points[x.rank] for x in self.cards])
+        aces = len([x for x in self.cards if x.rank == 1])
+        value = sum([10 if x.rank > 10 else x.rank for x in self.cards]) + aces*10
 
         if value <= 21 or aces == 0:
             return value
 
         while aces > 0 and value > 21:
-            value -= 10  # value = value - 11 (ace) + 1 (other value ace)
+            value -= 10
             aces -= 1
         return value
 
@@ -87,9 +69,6 @@ class Hand:
         if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
             return self.cards.pop()
         return None
-
-    def is_playing(self):
-        return self.playing
 
     def to_dict(self):
         return {"cards": [a.to_dict() for a in self.cards if a.face_up]}
@@ -198,7 +177,7 @@ class Player:
                 best_hand = hand
         self.table.end_game(best_hand)
         if self.table.winner == "player":
-            self.balance += 2*self.bid
+            self.balance += 2 * self.bid
 
     def to_dict(self):
         if self.game_state == "end_game":
@@ -242,12 +221,11 @@ class Table:
         self.croupier_hand.add_card(self.deck.get_card(), False)
         self.croupier_hand.add_card(self.deck.get_card())
 
-
     # TODO check if insurance is only against Blackjack
     def can_insure(self):
         if self.game_state == "begin_game":
             if len(self.croupier_hand.cards) == 2 and \
-                    (self.croupier_hand.cards[1].get_rank() == 10 or self.croupier_hand.cards[1].get_rank() == 11):
+                    (self.croupier_hand.cards[1].rank == 10 or self.croupier_hand.cards[1].rank == 11):
                 return True
         return False
 
@@ -261,7 +239,7 @@ class Table:
         while self.croupier_hand.count_cards() < 17:
             self.croupier_hand.add_card(self.deck.get_card())
 
-        if self.croupier_hand.count_cards() > player_hand.count_cards():
+        if 21 >= self.croupier_hand.count_cards() > player_hand.count_cards():
             self.winner = "croupier"
         else:
             self.winner = "player"
@@ -272,14 +250,13 @@ class Table:
         self.croupier_hand = None
 
 
-
 clients = {}
 tables = {}
 actions = {
     "split": Player.split,
     "double": Player.double,
     "insure": Player.insure,
-    "pas": Player.pas,
+    "pass": Player.pas,
     "get": Player.get_card,
     "quit": Player.quit_table
 }

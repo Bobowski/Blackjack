@@ -51,7 +51,7 @@ def double(pid):
 
 
 def pas(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "pas"}).json()
+    js = requests.post(server + "player-" + str(pid), json={"header": "pass"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
@@ -126,19 +126,19 @@ def count_cards(hand):
 
 
 ranks = {
-    1: "2",
-    2: "3",
-    3: "4",
-    4: "5",
-    5: "6",
-    6: "7",
-    7: "8",
-    8: "9",
-    9: "10",
-    10: "Jack",
-    11: "Queen",
-    12: "King",
-    13: "Ace"
+    1: "Ace",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+    11: "Jack",
+    12: "Queen",
+    13: "King",
 }
 colors = {
     "D": "Diamonds",
@@ -161,7 +161,6 @@ print("Player registered (id " + str(pid) + ")")
 while run:
     command = input()
     js = None
-    cls()
     try:
         if command == "join_game":
             print("Type table id: ")
