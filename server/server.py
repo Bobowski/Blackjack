@@ -142,12 +142,16 @@ class Player:
             else:
                 raise Exception("Cannot split")
 
-    # TODO check if insurance is only against Blackjack
     def insure(self):
         if self.table is not None:
             if not self.has_insurance and self.game_state == "begin_game":
                 if self.table.can_insure():
-                    self.has_insurance = True
+                    if self.croupier_hand.cards[1].rank==10:
+                        self.game_state=="end_game"
+                        #TODO zwrócić, że wygrał krupier, dać mu do kieszeni 2*insurance
+                    else:
+                        self.game_state=="end_game"
+                        #TODO koniec z kieszeni stracił połowę stawki
                 else:
                     raise Exception("Cannot insure")
             else:
@@ -221,12 +225,11 @@ class Table:
         self.croupier_hand.add_card(self.deck.get_card(), False)
         self.croupier_hand.add_card(self.deck.get_card())
 
-    # TODO check if insurance is only against Blackjack
     def can_insure(self):
         if self.game_state == "begin_game":
-            if len(self.croupier_hand.cards) == 2 and \
-                    (self.croupier_hand.cards[1].rank == 10 or self.croupier_hand.cards[1].rank == 11):
-                return True
+            return False
+        if self.croupier_hand.cards[1].rank ==11:
+            return True
         return False
 
     def end_game(self, player_hand):
