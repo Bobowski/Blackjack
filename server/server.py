@@ -2,6 +2,7 @@ from random import shuffle
 
 from flask import Flask, request, jsonify
 
+#TODO:braukuje po przekroczeniu 21 i zakończeniu wyświetlenia tego
 
 
 class Card:
@@ -79,7 +80,6 @@ class Player:
         self.table = None
         self.hands = None
         self.has_double = None
-        self.has_insurance = None
         self.has_split = None
         self.game_state = "awaiting"
         self.bid = None
@@ -97,7 +97,6 @@ class Player:
             self.hands[0].add_card(self.table.deck.get_card())
             self.hands[0].add_card(self.table.deck.get_card())
             self.has_double = False
-            self.has_insurance = False
             self.has_split = False
             self.bid = bid
             self.balance -= bid
@@ -144,18 +143,15 @@ class Player:
 
     def insure(self):
         if self.table is not None:
-            if not self.has_insurance and self.game_state == "begin_game":
-                if self.table.can_insure():
-                    if self.croupier_hand.cards[1].rank==10:
-                        self.game_state=="end_game"
-                        #TODO zwrócić, że wygrał krupier, dać mu do kieszeni 2*insurance
-                    else:
-                        self.game_state=="end_game"
-                        #TODO koniec z kieszeni stracił połowę stawki
-                else:
-                    raise Exception("Cannot insure")
+            if self.table.can_insure():
+                self.balance -= 0.5 * self.bild
+                if self.croupier_hand.cards[1].rank == 10:
+                    self.balance += self.bid
+                self.table.end_game()
             else:
                 raise Exception("Cannot insure")
+        else:
+            raise Exception("Cannot insure")
 
     def pas(self, hand_number=0):
         if self.table is not None and self.game_state != "end_game":
@@ -193,7 +189,7 @@ class Player:
             }
         return {
             "header": "in_game",
-            "insurance": self.has_insurance,
+            "insurance": False,
             "bid": self.bid,
             "hands": [a.to_dict() for a in self.hands],
             "croupier": self.table.croupier_hand.to_dict()
@@ -204,7 +200,6 @@ class Player:
         self.table = None
         self.hands = None
         self.has_double = None
-        self.has_insurance = None
         self.has_split = None
         self.game_state = "awaiting"
         self.bid = None
