@@ -101,6 +101,7 @@ class Player:
             self.has_split = False
             self.bid = bid
             self.balance -= bid
+            if self.hands[0].count_cards() == 21: self.end_game()
         except Exception as e:
             raise e
 
