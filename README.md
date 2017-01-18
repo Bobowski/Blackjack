@@ -9,6 +9,9 @@ Client can play Blackjack with table. There is only one table for each client an
 Client posts requests to different URL and recieves PublicTable structure packed in Json as an answer.
 
 
+##How to use
+Run the server. Client run the application. To join to game should write join_game.You should write the number of ID. After you can write: split, pas, insure, double, hit.
+
 **Types of requests:**
   1. **Begin game**
     * URL: http://[server]:[port]/begin 
