@@ -2,7 +2,8 @@ from random import shuffle
 
 from flask import Flask, request, jsonify
 
-#TODO:braukuje po przekroczeniu 21 i zakończeniu wyświetlenia tego
+
+# TODO:braukuje po przekroczeniu 21 i zakończeniu wyświetlenia tego
 
 
 class Card:
@@ -56,7 +57,7 @@ class Hand:
 
     def count_cards(self):
         aces = len([x for x in self.cards if x.rank == 1])
-        value = sum([10 if x.rank > 10 else x.rank for x in self.cards]) + aces*10
+        value = sum([10 if x.rank > 10 else x.rank for x in self.cards]) + aces * 10
 
         if value <= 21 or aces == 0:
             return value
@@ -223,7 +224,7 @@ class Table:
     def can_insure(self):
         if self.game_state == "begin_game":
             return False
-        if self.croupier_hand.cards[1].rank ==11:
+        if self.croupier_hand.cards[1].rank == 11:
             return True
         return False
 

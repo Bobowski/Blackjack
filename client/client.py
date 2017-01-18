@@ -6,19 +6,19 @@ server = "http://localhost:5000/"
 
 run = True
 cards_points = {
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 5,
-    5: 6,
-    6: 7,
-    7: 8,
-    8: 9,
-    9: 10,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
     10: 10,
     11: 10,
     12: 10,
-    13: 11
+    13: 10
 }
 
 
@@ -113,14 +113,14 @@ def cls():
 
 def count_cards(hand):
     cards = hand["cards"]
-    aces = len([x for x in cards if x["rank"] == 13])
-    value = sum([cards_points[x["rank"]] for x in cards])
+    aces = len([x for x in cards if x["rank"] == 1])
+    value = sum([10 if x["rank"] > 10 else x["rank"] for x in cards]) + aces * 10
 
     if value <= 21 or aces == 0:
         return value
 
     while aces > 0 and value > 21:
-        value -= 10  # value = value - 11 (ace) + 1 (other value ace)
+        value -= 10
         aces -= 1
     return value
 
