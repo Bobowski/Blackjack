@@ -3,18 +3,13 @@ from functools import wraps
 from jsonschema import validate, ValidationError
 from flask import Flask, request, jsonify
 
-from blackjack.logic import Player, Table
+from blackjack.logic import Player, Table, InvalidMove
 from blackjack.schemas import schemas
 
 
 app = Flask(__name__)
 clients = {}
 tables = {}
-
-
-# Server return messages
-def error(msg):
-    return jsonify({"header": "error", "message": msg}), 400
 
 
 def confirm_register(cid):
@@ -29,20 +24,26 @@ def validate_schema(schema_name):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kw):
-            try:
-                validate(request.json, schema=schemas[schema_name])
-            except ValidationError as e:
-                return error(e.message)
+            validate(request.json, schema=schemas[schema_name])
             return f(*args, **kw)
         return wrapper
     return decorator
+
+
+@app.errorhandler(ValidationError)
+@app.errorhandler(InvalidMove)
+def handle_exception(exception):
+    response = jsonify({"header": "error", "message": exception.message})
+    response.status_code = 400
+    return response
 
 
 @app.route('/register', methods=['POST'])
 @validate_schema('register')
 def register():
     cid = max(clients) + 1 if clients else 0
-    clients[cid] = Player(request.json["cash"])
+    cash = int(request.json["cash"])
+    clients[cid] = Player(cash)
     return confirm_register(cid)
 
 

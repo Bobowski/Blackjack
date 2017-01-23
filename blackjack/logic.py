@@ -2,6 +2,12 @@ from random import shuffle
 # TODO:braukuje po przekroczeniu 21 i zakończeniu wyświetlenia tego
 
 
+class InvalidMove(Exception):
+    def __init__(self, message):
+        Exception.__init__(self)
+        self.message = message
+
+
 class Card:
     def __init__(self, color, rank, face_up=False):
         # color - 'D' Diamonds, 'C' Clubs, 'H' Hearts, 'S' Spades
