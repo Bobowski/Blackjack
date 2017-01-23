@@ -23,56 +23,58 @@ cards_points = {
 
 
 def register(cash):
-    js = requests.post(server + "begin", json={"header": "register", "cash": cash}).json()
+    js = requests.post(server + "register", json={"header": "register", "cash": cash}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def join_game(gid, pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "begin_game", "table_id": gid, "bid": 10}).json()
+    js = requests.post(
+        server + "player/" + str(pid) + "/begin", json={"header": "begin_game", "table_id": gid, "bid": 10}
+    ).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def split(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "split"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "split"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def double(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "double"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "double"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def pas(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "pass"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "pass"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def insure(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "insure"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "insure"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def get(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "get"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "hit"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
 def quit_table(pid):
-    js = requests.post(server + "player-" + str(pid), json={"header": "quit"}).json()
+    js = requests.post(server + "player/" + str(pid) + "/action", json={"action": "quit"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
