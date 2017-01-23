@@ -2,7 +2,7 @@ import requests
 import os
 import time
 
-server = "http://localhost:5000/"
+server = "http://127.0.0.1:5000/"
 
 run = True
 cards_points = {
@@ -81,7 +81,8 @@ def quit_table(pid):
 def print_hand(hand):
     print("(value " + str(count_cards(hand)) + "):")
     for card in hand["cards"]:
-        print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
+        # print(ranks[card["rank"]] + " of " + colors[card["color"]] + " ")
+        print(chr(int("0x1F0" + colors[card["color"]] + ranks[card["rank"]], 16)) + " (" + ranks_names[card["rank"]] + " of " + colors_names[card["color"]] + ")")
 
 
 def print_table(js):
@@ -126,25 +127,47 @@ def count_cards(hand):
 
 
 ranks = {
-    1: "Ace",
-    2: "2",
-    3: "3",
-    4: "4",
-    5: "5",
-    6: "6",
-    7: "7",
-    8: "8",
-    9: "9",
-    10: "10",
-    11: "Jack",
-    12: "Queen",
-    13: "King",
+    1: "1",  # U+1F0x1
+    2: "2",  # U+1F0x2
+    3: "3",  # U+1F0x3
+    4: "4",  # U+1F0x4
+    5: "5",  # U+1F0x5
+    6: "6",  # U+1F0x6
+    7: "7",  # U+1F0x7
+    8: "8",  # U+1F0x8
+    9: "9",  # U+1F0x9
+    10: "A",  # U+1F0xA
+    11: "B",  # U+1F0xB (Jack
+    12: "D",  # U+1F0xC (Queen)
+    13: "E",  # U+1F0xD (King)
 }
 colors = {
-    "D": "Diamonds",
-    "S": "Spades",
-    "H": "Hearts",
-    "C": "Clubs"
+    "D": "C",  # U+1F0Cx
+    "S": "A",  # U+1F0Ax
+    "H": "B",  # U+1F0Bx
+    "C": "D"  # U+1F0Dx
+}
+
+ranks_names = {
+    1: "1",  # U+1F0x1
+    2: "2",  # U+1F0x2
+    3: "3",  # U+1F0x3
+    4: "4",  # U+1F0x4
+    5: "5",  # U+1F0x5
+    6: "6",  # U+1F0x6
+    7: "7",  # U+1F0x7
+    8: "8",  # U+1F0x8
+    9: "9",  # U+1F0x9
+    10: "Ace",  # U+1F0xA
+    11: "Jack",  # U+1F0xB (Jack
+    12: "Queen",  # U+1F0xC (Queen)
+    13: "King",  # U+1F0xD (King)
+}
+colors_names = {
+    "D": "Diamonts",  # U+1F0Cx
+    "S": "Spades",  # U+1F0Ax
+    "H": "Hearts",  # U+1F0Bx
+    "C": "Clubs"  # U+1F0Dx
 }
 
 init_js = register(100)
