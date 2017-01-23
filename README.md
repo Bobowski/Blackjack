@@ -139,3 +139,24 @@ Run the server. Client run the application. To join to game should write join_ga
 ```
     
     
+
+##Virtualenvwrapper
+Based on [documentation](https://virtualenvwrapper.readthedocs.io/en/latest/).
+
+First time:
+```
+$ pip install virtualenvwrapper
+$ export WORKON_HOME=~/Envs
+$ mkdir -p $WORKON_HOME
+$ source /usr/local/bin/virtualenvwrapper.sh
+$ mkvirtualenv env3-blackjack -p python3
+$ workon env3-blackjack
+$ pip install -r requirements.txt
+```
+
+Then:
+```
+$ workon env3-blackjack
+```
+
+

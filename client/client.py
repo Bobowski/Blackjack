@@ -6,59 +6,73 @@ server = "http://localhost:5000/"
 
 run = True
 cards_points = {
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 5,
-    5: 6,
-    6: 7,
-    7: 8,
-    8: 9,
-    9: 10,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
     10: 10,
     11: 10,
     12: 10,
-    13: 11
+    13: 10
 }
 
 
-def enter_game(bid):
-    js = requests.post(server + "begin", json={"header": "register", "bid": bid}).json()
+def register(cash):
+    js = requests.post(server + "begin", json={"header": "register", "cash": cash}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
-def split(gid):
-    js = requests.post(server + "game-" + str(gid), json={"header": "split"}).json()
+def join_game(gid, pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "begin_game", "table_id": gid, "bid": 10}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
-def double(gid):
-    js = requests.post(server + "game-" + str(gid), json={"header": "double"}).json()
+def split(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "split"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
-def pas(gid):
-    js = requests.post(server + "game-" + str(gid), json={"header": "pas"}).json()
+def double(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "double"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
-def insure(gid):
-    js = requests.post(server + "game-" + str(gid), json={"header": "insure"}).json()
+def pas(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "pass"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
 
 
-def get(gid):
-    js = requests.post(server + "game-" + str(gid), json={"header": "get"}).json()
+def insure(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "insure"}).json()
+    if js["header"] == "error":
+        raise Exception(js["message"])
+    return js
+
+
+def get(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "get"}).json()
+    if js["header"] == "error":
+        raise Exception(js["message"])
+    return js
+
+
+def quit_table(pid):
+    js = requests.post(server + "player-" + str(pid), json={"header": "quit"}).json()
     if js["header"] == "error":
         raise Exception(js["message"])
     return js
@@ -99,32 +113,32 @@ def cls():
 
 def count_cards(hand):
     cards = hand["cards"]
-    aces = len([x for x in cards if x["rank"] == 13])
-    value = sum([cards_points[x["rank"]] for x in cards])
+    aces = len([x for x in cards if x["rank"] == 1])
+    value = sum([10 if x["rank"] > 10 else x["rank"] for x in cards]) + aces * 10
 
     if value <= 21 or aces == 0:
         return value
 
     while aces > 0 and value > 21:
-        value -= 10  # value = value - 11 (ace) + 1 (other value ace)
+        value -= 10
         aces -= 1
     return value
 
 
 ranks = {
-    1: "2",
-    2: "3",
-    3: "4",
-    4: "5",
-    5: "6",
-    6: "7",
-    7: "8",
-    8: "9",
-    9: "10",
-    10: "Jack",
-    11: "Queen",
-    12: "King",
-    13: "Ace"
+    1: "Ace",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "10",
+    11: "Jack",
+    12: "Queen",
+    13: "King",
 }
 colors = {
     "D": "Diamonds",
@@ -133,33 +147,35 @@ colors = {
     "C": "Clubs"
 }
 
-init_js = enter_game(10)
-gid = init_js["id"]
+init_js = register(100)
+pid = init_js["id"]
 actions = {
     "split": split,
     "double": double,
     "pas": pas,
     "insure": insure,
-    "hit": get
+    "hit": get,
+    "quit": quit_table
 }
-print("Game started (id " + str(gid) + ")")
-print_table(init_js["table"])
-
+print("Player registered (id " + str(pid) + ")")
 while run:
     command = input()
-    js = ""
-    cls()
-    if command == "quit":
-        break
+    js = None
     try:
-        js = actions[command](gid)
-        if js["header"] == "in_game":
+        if command == "join_game":
+            print("Type table id: ")
+            tid = int(input())
+            js = join_game(tid, pid)
+        else:
+            if command == "quit":
+                js = None
+            if command in actions.keys():
+                js = actions[command](pid)
+        if js is not None and js["header"] == "in_game":
             print_table(js)
-        elif js["header"] == "end_game":
+        elif js is not None and js["header"] == "end_game":
             print_end(js)
-            break
     except Exception as e:
         print("Error: " + str(e))
-        print_table(js)
-time.sleep(3)
-cls()
+        if js is not None and js["header"] == "in_game":
+            print_table(js)

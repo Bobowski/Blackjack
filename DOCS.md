@@ -4,9 +4,17 @@ Client requests may vary depending on game state
 
 **Begin game**
 ```javascript
-ActionBegin
+Register
 {
     "header": "register",
+    "cash": number
+}
+```
+```javascript
+BeginGame
+{
+    "header": "begin_game",
+    "table_id": number,
     "bid": number
 }
 ```
@@ -14,10 +22,9 @@ ActionBegin
 ```javascript
 ActionInGame
 {
-    "header": string //one of the following "split", "insure", "double", "take", "pass"
+    "header": string //one of the following "split", "insure", "double", "take", "pass", "quit"
 }
 ```
-
 ## Server
 Server response may vary depending on game state
 
@@ -32,9 +39,8 @@ Error
 ```javascript
 ID
 {
-    "header": "begin_game",
+    "header": "confirm_register",
     "id": number,
-    "table": TableInGame
 }
 ```
 **In Game**
