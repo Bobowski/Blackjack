@@ -12,14 +12,6 @@ clients = {}
 tables = {}
 
 
-def confirm_register(cid):
-    return jsonify({"header": "confirm_register", "id": cid})
-
-
-def game_state(table):
-    return jsonify(table.to_dict())
-
-
 def validate_schema(schema_name):
     def decorator(f):
         @wraps(f)
@@ -44,23 +36,23 @@ def register():
     cid = max(clients) + 1 if clients else 0
     cash = int(request.json["cash"])
     clients[cid] = Player(cash)
-    return confirm_register(cid)
+    return jsonify({"header": "confirm_register", "id": cid})
 
 
-@app.route('/player/<int:cid>/begin', methods=['POST'])
+@app.route('/player/<int:uid>/begin', methods=['POST'])
 @validate_schema('begin_game')
-def begin_game(cid: int):
+def begin_game(uid: int):
     tid = request.json["table_id"]
     if tid not in tables.keys() or tables[tid] is not None:
         tables[tid] = Table()
-    clients[cid].join_table(tables[tid], int(request.json["bid"]))
+    clients[uid].join_table(tables[tid], int(request.json["bid"]))
 
-    return game_state(clients[cid])
+    return jsonify(clients[uid].to_dict())
 
 
-@app.route('/player/<int:cid>/action', methods=['POST'])
+@app.route('/player/<int:uid>/action', methods=['POST'])
 @validate_schema('action_in_game')
-def make_action(cid: int):
+def make_action(uid: int):
     actions = {
         "split": Player.split,
         "double": Player.double,
@@ -69,5 +61,5 @@ def make_action(cid: int):
         "hit": Player.get_card,
         "quit": Player.quit_table
     }
-    actions[request.json["action"]](clients[cid])
-    return game_state(clients[cid])
+    actions[request.json["action"]](clients[uid])
+    return jsonify(clients[uid].to_dict())
