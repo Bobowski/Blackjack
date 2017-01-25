@@ -8,8 +8,6 @@ from blackjack.schemas import schemas
 
 
 app = Flask(__name__)
-clients = {}
-tables = {}
 
 
 def validate_schema(schema_name):

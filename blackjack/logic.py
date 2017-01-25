@@ -1,5 +1,12 @@
+from functools import wraps
 from random import shuffle
 # TODO:braukuje po przekroczeniu 21 i zakończeniu wyświetlenia tego
+from random import Random
+from typing import List
+
+
+players = {}
+tables = {}
 
 
 class InvalidMove(Exception):
@@ -9,103 +16,112 @@ class InvalidMove(Exception):
 
 
 class Card:
-    def __init__(self, color, rank, face_up=False):
-        # color - 'D' Diamonds, 'C' Clubs, 'H' Hearts, 'S' Spades
-        # rank - number from 1 to 13
+    colors = ['Diamond', 'Clubs', 'Hearts', 'Spades']
+    ranks = list(range(1, 14))
+
+    def __init__(self, color: str, rank: int, face_up: bool=False):
         self.color = color
         self.rank = rank
         self.face_up = face_up
 
     def to_dict(self):
-        return {"color": self.color, "rank": self.rank}
+        return {
+            "color": self.color if self.face_up else "face_down",
+            "rank": self.rank if self.face_up else "face_down"
+        }
+
+    @staticmethod
+    def make_deck():
+        return [
+            Card(color=color, rank=rank)
+            for color in Card.colors
+            for rank in Card.ranks
+        ]
 
 
-class Deck:
-    def __init__(self):
+class Decks:
+    def __init__(self, seed: int=42):
         self.cards = []
-        colors = ['D', 'C', 'H', 'S']
-        for c in colors:
-            for r in range(1, 14):
-                self.cards.append(Card(c, r))
-        shuffle(self.cards)
+        self.random = Random(seed)
 
-    def shuffle(self):
-        shuffle(self.cards)
+    def new_deck(self):
+        self.cards = Card.make_deck()
+        self.random.shuffle(self.cards)
 
     def get_card(self):
         if len(self.cards) == 0:
-            colors = ['D', 'C', 'H', 'S']
-            for c in colors:
-                for r in range(1, 14):
-                    self.cards.append(Card(c, r))
-            shuffle(self.cards)
+            self.new_deck()
         return self.cards.pop()
 
 
 class Hand:
-    def __init__(self, card=None):
+    def __init__(self):
         self.playing = True
-        if card is None:
-            self.cards = []
-            return
-        if not isinstance(card, Card):
-            raise Exception("Variable is not Card")
-        self.cards = [card]
+        self.cards = []
 
-    def add_card(self, card, face_up=True):
-        if not isinstance(card, Card):
-            raise Exception("Variable is not Card")
-        self.cards.append(Card(card.color, card.rank, face_up))
-
-    def count_cards(self):
-        aces = len([x for x in self.cards if x.rank == 1])
-        value = sum([10 if x.rank > 10 else x.rank for x in self.cards]) + aces * 10
-
-        if value <= 21 or aces == 0:
-            return value
-
-        while aces > 0 and value > 21:
-            value -= 10
-            aces -= 1
-        return value
-
-    def try_split(self):
-        if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
-            return self.cards.pop()
-        return None
+    def add_card(self, card: Card, face_up: bool=True):
+        card.face_up = face_up
+        self.cards.append(card)
 
     def to_dict(self):
-        return {"cards": [a.to_dict() for a in self.cards if a.face_up]}
+        return {"cards": [a.to_dict() for a in self.cards]}
+
+
+def calculate_hand_value(cards: List(Card)):
+    aces = len([x for x in cards if x.rank == 1])
+    value = sum([10 if x.rank > 10 else x.rank for x in cards]) + aces * 10
+
+    if value <= 21 or aces == 0:
+        return value
+
+    while aces > 0 and value > 21:
+        value -= 10
+        aces -= 1
+    return value
+
+    # def try_split(self):
+    #     if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
+    #         new_hand = Hand()
+    #         new_hand.add_card(self.cards.pop())
+    #         return new_hand
+    #     raise InvalidMove("Cannot perform split")
+
+
 
 
 class Player:
-    def __init__(self, cash):
-        self.table = None
-        self.hands = None
-        self.has_double = None
-        self.has_split = None
-        self.game_state = "awaiting"
-        self.bid = None
+    def __init__(self, cash: int):
         self.balance = cash
+        self.table = None
 
-    def join_table(self, table, bid):
-        if not isinstance(table, Table):
-            raise Exception("Variable is not table!")
-        try:
-            table.start()
-            self.game_state = "begin_game"
-            self.table = table
-            self.hands = []
-            self.hands.append(Hand())
-            self.hands[0].add_card(self.table.deck.get_card())
-            self.hands[0].add_card(self.table.deck.get_card())
-            self.has_double = False
-            self.has_split = False
-            self.bid = bid
-            self.balance -= bid
-            if self.hands[0].count_cards() == 21: self.end_game()
-        except Exception as e:
-            raise e
+
+        self.hands = []
+        self.did_double = False
+        self.did_split = False
+        self.game_state = "awaiting"
+        self.bid = 0
+
+
+    def join_table(self, table_id: int, bid: int):
+        tables[table_id].sit(self)
+
+        self.game_state = "begin_game"
+
+        self.hands = [Hand()]
+
+
+        table.start()
+        self.game_state = "begin_game"
+        self.table = table
+        self.hands = []
+        self.hands.append(Hand())
+        self.hands[0].add_card(self.table.deck.get_card())
+        self.hands[0].add_card(self.table.deck.get_card())
+        self.has_double = False
+        self.has_split = False
+        self.bid = bid
+        self.balance -= bid
+        if self.hands[0].count_cards() == 21: self.end_game()
 
     def get_card(self):
         if self.table is not None and self.game_state != "end_game":
@@ -209,12 +225,56 @@ class Player:
         self.bid = None
 
 
+def only_in_state(state_name):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(self: Table, *args, **kw):
+            if self.game_state == state_name:
+                return f(*args, **kw)
+            raise InvalidMove("Not in proper state")
+        return wrapper
+    return decorator
+
+
+def requires_player():
+    def decorator(f):
+        @wraps(f)
+        def wrapper(self: Table, *args, **kw):
+            if self.player is not None:
+                return f(*args, **kw)
+            raise InvalidMove("No player by the table")
+        return wrapper
+    return decorator
+
+
 class Table:
-    def __init__(self):
-        self.winner = None  # TODO think of better solution
+    def __init__(self, bid: int = 0):
         self.game_state = "awaiting"
-        self.deck = Deck()
+        self.decks = Decks()
+        self.player = None
+        self.player_hands = None
+        self.player_hand = None
         self.croupier_hand = None
+        self.winner = None
+        self.bid = bid
+
+    @only_in_state("awaiting")
+    @requires_player()
+    def begin_game(self, bid):
+        self.game_state = "begin_game"
+
+        self.bid = bid
+
+        self.croupier_hand = Hand()
+        self.croupier_hand.add_card(self.decks.get_card(), face_up=False)
+        self.croupier_hand.add_card(self.decks.get_card(), face_up=True)
+
+        self.player_hand = Hand()
+        self.player_hands = [self.player_hand]
+        self.player_hand.add_card(self.decks.get_card(), face_up=True)
+        self.player_hand.add_card(self.decks.get_card(), face_up=True)
+
+
 
     def start(self):
         if self.game_state == "begin_game" or self.game_state == "in_game":

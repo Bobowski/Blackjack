@@ -25,7 +25,8 @@ cards_points = {
 def register(cash):
     js = requests.post(server + "register", json={"header": "register", "cash": cash}).json()
     if js["header"] == "error":
-        raise Exception(js["message"])
+        print(js["message"])
+        raise Exception()
     return js
 
 
