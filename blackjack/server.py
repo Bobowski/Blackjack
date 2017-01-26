@@ -3,7 +3,7 @@ from functools import wraps
 from jsonschema import validate, ValidationError
 from flask import Flask, request, jsonify
 
-from blackjack.logic import Player, Table, InvalidMove
+from blackjack.game import Player, Table, InvalidMove
 from blackjack.schemas import schemas
 
 

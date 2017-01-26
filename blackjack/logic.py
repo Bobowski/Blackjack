@@ -5,7 +5,6 @@ from random import Random
 from typing import List
 
 
-players = {}
 tables = {}
 
 
@@ -15,43 +14,43 @@ class InvalidMove(Exception):
         self.message = message
 
 
-class Card:
-    colors = ['Diamond', 'Clubs', 'Hearts', 'Spades']
-    ranks = list(range(1, 14))
-
-    def __init__(self, color: str, rank: int, face_up: bool=False):
-        self.color = color
-        self.rank = rank
-        self.face_up = face_up
-
-    def to_dict(self):
-        return {
-            "color": self.color if self.face_up else "face_down",
-            "rank": self.rank if self.face_up else "face_down"
-        }
-
-    @staticmethod
-    def make_deck():
-        return [
-            Card(color=color, rank=rank)
-            for color in Card.colors
-            for rank in Card.ranks
-        ]
-
-
-class Decks:
-    def __init__(self, seed: int=42):
-        self.cards = []
-        self.random = Random(seed)
-
-    def new_deck(self):
-        self.cards = Card.make_deck()
-        self.random.shuffle(self.cards)
-
-    def get_card(self):
-        if len(self.cards) == 0:
-            self.new_deck()
-        return self.cards.pop()
+# class Card:
+#     colors = ['Diamond', 'Clubs', 'Hearts', 'Spades']
+#     ranks = list(range(1, 14))
+#
+#     def __init__(self, color: str, rank: int, face_up: bool=False):
+#         self.color = color
+#         self.rank = rank
+#         self.face_up = face_up
+#
+#     def to_dict(self):
+#         return {
+#             "color": self.color if self.face_up else "face_down",
+#             "rank": self.rank if self.face_up else "face_down"
+#         }
+#
+#     @staticmethod
+#     def make_deck():
+#         return [
+#             Card(color=color, rank=rank)
+#             for color in Card.colors
+#             for rank in Card.ranks
+#         ]
+#
+#
+# class Decks:
+#     def __init__(self, seed: int=42):
+#         self.cards = []
+#         self.random = Random(seed)
+#
+#     def new_deck(self):
+#         self.cards = Card.make_deck()
+#         self.random.shuffle(self.cards)
+#
+#     def get_card(self):
+#         if len(self.cards) == 0:
+#             self.new_deck()
+#         return self.cards.pop()
 
 
 class Hand:
@@ -67,19 +66,19 @@ class Hand:
         return {"cards": [a.to_dict() for a in self.cards]}
 
 
-def calculate_hand_value(cards: List(Card)):
-    aces = len([x for x in cards if x.rank == 1])
-    value = sum([10 if x.rank > 10 else x.rank for x in cards]) + aces * 10
-
-    if value <= 21 or aces == 0:
-        return value
-
-    while aces > 0 and value > 21:
-        value -= 10
-        aces -= 1
-    return value
-
-    # def try_split(self):
+# def calculate_hand_value(cards: List(Card)):
+#     aces = len([x for x in cards if x.rank == 1])
+#     value = sum([10 if x.rank > 10 else x.rank for x in cards]) + aces * 10
+#
+#     if value <= 21 or aces == 0:
+#         return value
+#
+#     while aces > 0 and value > 21:
+#         value -= 10
+#         aces -= 1
+#     return value
+#
+#     # def try_split(self):
     #     if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
     #         new_hand = Hand()
     #         new_hand.add_card(self.cards.pop())
@@ -164,7 +163,7 @@ class Player:
     def insure(self):
         if self.table is not None:
             if self.table.can_insure():
-                self.balance -= 0.5 * self.bild
+                self.balance -= 0.5 * self.bid
                 if self.croupier_hand.cards[1].rank == 10:
                     self.balance += self.bid
                 self.table.end_game()
