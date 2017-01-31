@@ -12,14 +12,11 @@ schemas = {
     "begin_game": {
         "type": "object",
         "properties": {
-            "table_id": {
-                "type": "number",
-            },
             "bid": {
                 "type": "number"
             }
         },
-        "required": ["table_id", "bid"]
+        "required": ["bid"]
     },
     "action_in_game": {
         "type": "object",

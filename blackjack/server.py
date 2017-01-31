@@ -3,11 +3,14 @@ from functools import wraps
 from jsonschema import validate, ValidationError
 from flask import Flask, request, jsonify
 
-from blackjack.game import Player, Table, InvalidMove
+from blackjack.game.table import Player, Table, InvalidMove
 from blackjack.schemas import schemas
-
+from blackjack.describe import table_to_dict
 
 app = Flask(__name__)
+
+
+tables = {}
 
 
 def validate_schema(schema_name):
@@ -31,33 +34,29 @@ def handle_exception(exception):
 @app.route('/register', methods=['POST'])
 @validate_schema('register')
 def register():
-    cid = max(clients) + 1 if clients else 0
     cash = int(request.json["cash"])
-    clients[cid] = Player(cash)
-    return jsonify({"header": "confirm_register", "id": cid})
+    uid = max(tables) + 1 if tables else 0
+    tables[uid] = Table(cash)
+    return jsonify({"header": "confirm_register", "id": uid})
 
 
 @app.route('/player/<int:uid>/begin', methods=['POST'])
 @validate_schema('begin_game')
 def begin_game(uid: int):
-    tid = request.json["table_id"]
-    if tid not in tables.keys() or tables[tid] is not None:
-        tables[tid] = Table()
-    clients[uid].join_table(tables[tid], int(request.json["bid"]))
-
-    return jsonify(clients[uid].to_dict())
+    tables[uid].begin_game(request.json["bid"])
+    return jsonify(table_to_dict(tables[uid]))
 
 
 @app.route('/player/<int:uid>/action', methods=['POST'])
 @validate_schema('action_in_game')
 def make_action(uid: int):
     actions = {
-        "split": Player.split,
-        "double": Player.double,
-        "insure": Player.insure,
-        "pass": Player.pas,
-        "hit": Player.get_card,
-        "quit": Player.quit_table
+        "split": Table.split,
+        "double": Table.double_down,
+        "insure": Table.insure,
+        "pass": Table.pas,
+        "hit": Table.get_card,
+        "quit": Table.surrender
     }
-    actions[request.json["action"]](clients[uid])
-    return jsonify(clients[uid].to_dict())
+    actions[request.json["action"]](tables[uid])
+    return jsonify(table_to_dict(tables[uid]))

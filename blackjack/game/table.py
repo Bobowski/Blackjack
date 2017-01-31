@@ -1,12 +1,11 @@
 from functools import wraps
-from typing import List
 
 from namedlist import namedlist
 
 from blackjack.game.decks import Decks, Card
 
 
-State = namedlist("State", ["phase", "bid", "winner"])
+State = namedlist("State", ["phase", "bid", "winnings"])
 
 
 class InvalidMove(Exception):
@@ -30,8 +29,9 @@ class Hand:
 
     @property
     def value(self) -> int:
-        aces = len([x for x in self.cards if x.rank == 1])
-        value = sum([10 if x.rank > 10 else x.rank for x in self.cards]) + aces * 10
+        cards = [x for x in self.cards if x.face_up]
+        aces = len([x for x in cards if x.rank == 1])
+        value = sum([10 if x.rank > 10 else x.rank for x in cards]) + aces * 10
 
         if value <= 21 or aces == 0:
             return value
@@ -84,7 +84,7 @@ class Croupier:
 
 class Table:
     def __init__(self, account_balance: int):
-        self.state = State(phase="awaiting", bid=0, winner=None)
+        self.state = State(phase="awaiting", bid=0, winnings=0)
         self.player = Player(account_balance)
         self.croupier = Croupier()
         self.decks = Decks()
@@ -104,7 +104,6 @@ class Table:
 
                 if self.player.hand.value > 21:
                     self.player.hand.playing = False
-                    return
 
                 if self.player.other_hand.playing:
                     self.player.switch_hand()
@@ -118,18 +117,23 @@ class Table:
                     while self.croupier.hand.value <= 16:
                         self.croupier.hand.add(self.decks.get())
 
+                    for hand in self.player.hands:
+                        if hand.value >= self.croupier.hand.value:
+                            self.state.winnings += self.state.bid * 2
+                        self.player.account_balance += self.state.winnings
+
+                    self.state.phase = "end_game"
             return wrapper
         return decorator
 
-    def clear(self):  # TODO
-        self.state = State(phase="awaiting", bid=0, winner=None)
+    @game_action("awaiting", "end_game")
+    def begin_game(self, bid: int):
         self.croupier.clear()
         self.player.clear()
 
-    @game_action("awaiting")
-    def begin_game(self, bid: int):
         self.player.account_balance -= bid
         self.state.bid = bid
+        self.state.winnings = 0
 
         self.croupier.hand.add(self.decks.get(), face_up=False)
         self.croupier.hand.add(self.decks.get(), face_up=True)
