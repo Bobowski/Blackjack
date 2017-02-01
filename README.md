@@ -18,6 +18,7 @@ First you need to register player and obtain `uid` that will allows to perform f
 
   `POST`
 - **JSON:**
+
 ```javascript
 Register
 {
@@ -25,6 +26,7 @@ Register
 }
 ```
 - **Response:**
+
 ```javascript
 {
     "header": "confirm_register",
@@ -36,10 +38,13 @@ Register
 Beginning new game (deal) is only possible if table is in `awaiting` or `end_game` state.
 
 - **URL:**
+
   `/player/<uid>/begin`
 - **Method:**
+
   `POST`
 - **JSON:**
+
 ```javascript
 Begin
 {
@@ -47,16 +52,20 @@ Begin
 }
 ```
 - **Response:**
+
   `Table`
   
 ### Action
 Perform one of available actions.
 
 - **URL:**
-  `/player/<int:uid>/action`
+
+  `/player/<uid>/action`
 - **Method:**
+
   `POST`
 - **JSON:**
+
 ```javascript
 Action
 {
@@ -65,6 +74,7 @@ Action
 ```
 `action` is one of following `split`, `double_down`, `stand`, `hit`
 - **Response:**
+
   `Table`
 
 #### Structures
@@ -78,7 +88,7 @@ Table
 }
 ```
 
-```javascrip
+```javascript
 State
 {
     "phase": string,
@@ -87,7 +97,7 @@ State
 }
 ```
 
-```javascrip
+```javascript
 Player
 {
     "hands": [Hand],
@@ -96,14 +106,14 @@ Player
 }
 ```
 
-```javascrip
+```javascript
 Croupier
 {
     "hand": Hand
 }
 ```
 
-```javascrip
+```javascript
 Hand
 {
     "cards": [Card],
@@ -112,7 +122,7 @@ Hand
 }
 ```
 
-```javascrip
+```javascript
 Card
 {
     "color": string,
