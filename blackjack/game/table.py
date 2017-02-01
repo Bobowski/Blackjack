@@ -41,6 +41,10 @@ class Hand:
             aces -= 1
         return value
 
+    @property
+    def has_blackjack(self) -> bool:
+        return self.value == 21 and len(self.cards) == 2
+
 
 class Player:
     def __init__(self, account_balance: int):
@@ -114,14 +118,32 @@ class Table:
 
                     self.croupier.hand.cards[0].face_up = True
                     self.croupier.hand.cards[1].face_up = True
-                    while self.croupier.hand.value <= 16:
-                        self.croupier.hand.add(self.decks.get())
 
                     for hand in self.player.hands:
-                        if hand.value >= self.croupier.hand.value:
-                            self.state.winnings += self.state.bid * 2
-                    self.player.account_balance += self.state.winnings
+                        if hand.value > 21:
+                            continue
 
+                        if hand.has_blackjack:
+                            if self.croupier.hand.has_blackjack:
+                                self.state.winnings += self.state.bid
+                            else:
+                                self.state.winnings += self.state.bid * 2
+                            continue
+
+                        if self.croupier.hand.has_blackjack:
+                            continue
+
+                        while self.croupier.hand.value <= 16:
+                            self.croupier.hand.add(self.decks.get())
+
+                        if self.croupier.hand.value > 21:
+                            self.state.winnings += self.state.bid * 2
+                        elif hand.value == self.croupier.hand.value:
+                            self.state.winnings += self.state.bid
+                        elif hand.value > self.croupier.hand.value:
+                            self.state.winnings += self.state.bid * 2
+
+                    self.player.account_balance += self.state.winnings
                     self.state.phase = "end_game"
             return wrapper
         return decorator
