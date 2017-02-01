@@ -12,8 +12,10 @@ At this moment this implementation allows only playing against croupier 1 vs 1.
 First you need to register player and obtain `uid` that will allows to perform further actions.
 
 - **URL:**
+
   `/register`
 - **Method:**
+
   `POST`
 - **JSON:**
 ```javascript
