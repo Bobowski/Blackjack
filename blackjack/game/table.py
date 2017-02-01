@@ -120,7 +120,7 @@ class Table:
                     for hand in self.player.hands:
                         if hand.value >= self.croupier.hand.value:
                             self.state.winnings += self.state.bid * 2
-                        self.player.account_balance += self.state.winnings
+                    self.player.account_balance += self.state.winnings
 
                     self.state.phase = "end_game"
             return wrapper
@@ -149,7 +149,7 @@ class Table:
         self.state.phase = "in_game"
 
     @game_action("begin_game", "in_game")
-    def pas(self):
+    def stand(self):
         self.player.hand.playing = False
 
         self.state.phase = "in_game"
@@ -158,8 +158,8 @@ class Table:
     def double_down(self):
         self.player.account_balance -= self.state.bid
         self.state.bid *= 2
-
         self.player.hand.add(self.decks.get(), face_up=True)
+        self.player.hand.playing = False
 
         self.state.phase = "in_game"
 

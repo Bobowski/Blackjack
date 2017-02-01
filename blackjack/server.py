@@ -44,7 +44,9 @@ def register():
 @validate_schema('begin_game')
 def begin_game(uid: int):
     tables[uid].begin_game(request.json["bid"])
-    return jsonify(table_to_dict(tables[uid]))
+    table_dict = table_to_dict(tables[uid])
+    table_dict["header"] = "success"
+    return jsonify(table_dict)
 
 
 @app.route('/player/<int:uid>/action', methods=['POST'])
@@ -54,9 +56,12 @@ def make_action(uid: int):
         "split": Table.split,
         "double": Table.double_down,
         "insure": Table.insure,
-        "pass": Table.pas,
+        "stand": Table.stand,
         "hit": Table.get_card,
         "quit": Table.surrender
     }
     actions[request.json["action"]](tables[uid])
-    return jsonify(table_to_dict(tables[uid]))
+
+    table_dict = table_to_dict(tables[uid])
+    table_dict["header"] = "success"
+    return jsonify(table_dict)
