@@ -22,6 +22,47 @@ Register
     "cash": number
 }
 ```
+- **Response:**
+```javascript
+{
+    "header": "confirm_register",
+    "id": number
+}
+```
+
+### Begin
+Beginning new game (deal) is only possible if table is in `awaiting` or `end_game` state.
+
+- **URL:**
+  `/player/<int:uid>/begin`
+- **Method:**
+  `POST`
+- **JSON:**
+```javascript
+Begin
+{
+    "bid": number
+}
+```
+- **Response:**
+  `Table`
+  
+### Action
+Perform one of available actions.
+
+- **URL:**
+  `/player/<int:uid>/action`
+- **Method:**
+  `POST`
+- **JSON:**
+```javascript
+Action
+{
+    "action": string
+}
+```
+- **Response:**
+  `Table`
 
 # Blackjack
 Simple client-server Blackjack game.
