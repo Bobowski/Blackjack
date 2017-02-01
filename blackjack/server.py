@@ -37,13 +37,14 @@ def register():
     cash = int(request.json["cash"])
     uid = max(tables) + 1 if tables else 0
     tables[uid] = Table(cash)
-    return jsonify({"header": "confirm_register", "id": uid})
+    return jsonify({"header": "confirm_register", "uid": uid})
 
 
 @app.route('/player/<int:uid>/begin', methods=['POST'])
 @validate_schema('begin_game')
 def begin_game(uid: int):
     tables[uid].begin_game(request.json["bid"])
+
     table_dict = table_to_dict(tables[uid])
     table_dict["header"] = "success"
     return jsonify(table_dict)

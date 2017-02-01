@@ -28,7 +28,7 @@ Register
 ```javascript
 {
     "header": "confirm_register",
-    "id": number
+    "uid": number
 }
 ```
 
@@ -36,7 +36,7 @@ Register
 Beginning new game (deal) is only possible if table is in `awaiting` or `end_game` state.
 
 - **URL:**
-  `/player/<int:uid>/begin`
+  `/player/<uid>/begin`
 - **Method:**
   `POST`
 - **JSON:**
@@ -63,8 +63,64 @@ Action
     "action": string
 }
 ```
+`action` is one of following `split`, `double_down`, `stand`, `hit`
 - **Response:**
   `Table`
+
+#### Structures
+```javascript
+Table
+{
+    "header": "success"
+    "state": State,
+    "player": Player,
+    "croupier": Croupier
+}
+```
+
+```javascrip
+State
+{
+    "phase": string,
+    "bid": number,
+    "winnings": number
+}
+```
+
+```javascrip
+Player
+{
+    "hands": [Hand],
+    "current_hand": Hand,
+    "account_balance": number
+}
+```
+
+```javascrip
+Croupier
+{
+    "hand": Hand
+}
+```
+
+```javascrip
+Hand
+{
+    "cards": [Card],
+    "value": number,
+    "playing": boolean
+}
+```
+
+```javascrip
+Card
+{
+    "color": string,
+    "rank": string
+}
+```
+
+
 
 # Blackjack
 Simple client-server Blackjack game.
