@@ -17,7 +17,7 @@ First you need to register player and obtain `uid` that will allows to perform f
 - **Method:**
 
   `POST`
-- **JSON:**
+- **Request JSON:**
 
 ```javascript
 Register
@@ -25,7 +25,7 @@ Register
     "cash": number
 }
 ```
-- **Response:**
+- **Response JSON:**
 
 ```javascript
 {
@@ -43,7 +43,7 @@ Beginning new game (deal) is only possible if table is in `awaiting` or `end_gam
 - **Method:**
 
   `POST`
-- **JSON:**
+- **Request JSON:**
 
 ```javascript
 Begin
@@ -51,7 +51,7 @@ Begin
     "bid": number
 }
 ```
-- **Response:**
+- **Response JSON:**
 
   `Table`
   
@@ -64,18 +64,26 @@ Perform one of available actions.
 - **Method:**
 
   `POST`
-- **JSON:**
+- **Request JSON:**
 
 ```javascript
 Action
 {
-    "action": string
+    "action": string  # split, double_down, stay, hit
 }
 ```
-`action` is one of following `split`, `double_down`, `stand`, `hit`
-- **Response:**
+- **Response JSON:**
 
   `Table`
+
+#### Error Structure
+If some operation was not allowed of caused error that should be handled by client then this error message is returned with `400` return code.
+```javascript
+{
+    "header": "error",
+    "message": string
+}
+```
 
 #### Structures
 ```javascript
