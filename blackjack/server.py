@@ -3,7 +3,7 @@ from functools import wraps
 from jsonschema import validate, ValidationError
 from flask import Flask, request, jsonify
 
-from blackjack.game.table import Player, Table, InvalidMove
+from blackjack.game.table import Table, InvalidMove
 from blackjack.schemas import schemas
 from blackjack.describe import table_to_dict
 
@@ -54,11 +54,9 @@ def begin_game(uid: int):
 def make_action(uid: int):
     actions = {
         "split": Table.split,
-        "double": Table.double_down,
-        "insure": Table.insure,
+        "double_down": Table.double_down,
         "stand": Table.stand,
-        "hit": Table.get_card,
-        "quit": Table.surrender
+        "hit": Table.hit
     }
     actions[request.json["action"]](tables[uid])
 

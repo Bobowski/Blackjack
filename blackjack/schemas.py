@@ -23,7 +23,7 @@ schemas = {
         "properties": {
             "action": {
                 "type": "string",
-                "enum": ["split", "insure", "double", "hit", "stand", "quit"]
+                "enum": ["split", "double_down", "hit", "stand"]
             }
         },
         "required": ["action"]

@@ -76,7 +76,7 @@ class Player:
 
 class Croupier:
     def __init__(self):
-        self.hand = Hand()  # TODO
+        self.hand = Hand()
 
     def clear(self):
         self.hand.clear()
@@ -143,7 +143,7 @@ class Table:
         self.state.phase = "begin_game"
 
     @game_action("begin_game", "in_game")
-    def get_card(self):
+    def hit(self):
         self.player.hand.add(self.decks.get(), face_up=True)
 
         self.state.phase = "in_game"
@@ -165,13 +165,16 @@ class Table:
 
     @game_action("begin_game")
     def split(self):
-        # TODO double bid and split into two hands only if rank matches
         if self.did_split:
             raise InvalidMove("Already did split")
+
+        self.player.account_balance -= self.state.bid
 
         first_hand, second_hand = self.player.hands
         if first_hand.cards[0].rank == first_hand.cards[1].rank:
             second_hand.add(first_hand.cards.pop())
+            first_hand.add(self.decks.get(), face_up=True)
+            second_hand.add(self.decks.get(), face_up=True)
             self.did_split = True
         else:
             raise InvalidMove("Cannot split cards")
@@ -181,13 +184,7 @@ class Table:
         # TODO put additional 0.5 bid if croupier has ace (blackjack possibility)
         raise InvalidMove("Not yet implemented")
 
-        if self.did_insure:
-            raise InvalidMove("Already insured")
-        if self.croupier.hand.cards[1].rank != 1:
-            raise InvalidMove("Croupier does not have ace")
-
-        # TODO finish
-
+    @game_action("in_game", "begin_game")
     def surrender(self):
         # TODO abandon bid and start new game (open croupier's card ?)
-        pass
+        raise InvalidMove("Not yet implemented")
