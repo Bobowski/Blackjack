@@ -120,6 +120,9 @@ class Table:
                     self.croupier.hand.cards[1].face_up = True
 
                     for hand in self.player.hands:
+                        if hand.value == 0:
+                            continue
+
                         if hand.value > 21:
                             continue
 

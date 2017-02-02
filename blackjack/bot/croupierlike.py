@@ -19,7 +19,7 @@ for i in range(1000):
     except Exception:
         pass
 
-    if t["state"]["winnings"] > 0:
+    if t["state"]["winnings"] > 10:
         wins += 1
 
 print(t["player"]["account_balance"])
