@@ -109,7 +109,7 @@ class Table:
                 if self.player.hand.value > 21:
                     self.player.hand.playing = False
 
-                if self.player.other_hand.playing:
+                if not self.player.hand.playing and self.player.other_hand.playing:
                     self.player.switch_hand()
                     return
 
