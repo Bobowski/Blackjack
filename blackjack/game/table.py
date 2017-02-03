@@ -38,10 +38,6 @@ class Table:
         self.croupier = Croupier()
         self.decks = Decks(seed=seed)
 
-        self.did_split = False
-        self.did_double = False
-        self.did_insure = False
-
     def resolve_game(self):
         self.state.phase = "end_game"
 
@@ -78,7 +74,6 @@ class Table:
     def begin_game(self, bid: int):
         self.croupier.clear()
         self.player.clear()
-        self.did_split = False
 
         self.player.account_balance -= bid
         self.state.bid = bid
@@ -108,19 +103,17 @@ class Table:
 
     @action(from_phases=("begin_game",), to_phase="in_game")
     def split(self):
-        if self.did_split:
+        first_hand, second_hand = self.player.hands
+        if not (first_hand.is_empty or second_hand.is_empty):
             raise InvalidMove("Already did split")
 
-        self.player.account_balance -= self.state.bid
-
-        first_hand, second_hand = self.player.hands
-        if first_hand.cards[0].rank == first_hand.cards[1].rank:
-            second_hand.add(first_hand.cards.pop())
-            first_hand.add(self.decks.get(), face_up=True)
-            second_hand.add(self.decks.get(), face_up=True)
-            self.did_split = True
-        else:
+        if first_hand.cards[0].rank != first_hand.cards[1].rank:
             raise InvalidMove("Cannot split cards")
+
+        self.player.account_balance -= self.state.bid
+        second_hand.add(first_hand.cards.pop())
+        first_hand.add(self.decks.get(), face_up=True)
+        second_hand.add(self.decks.get(), face_up=True)
 
     @action(from_phases=("begin_game",), to_phase="in_game")
     def insure(self):

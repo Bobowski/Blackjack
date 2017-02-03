@@ -12,6 +12,10 @@ class Hand:
         card.face_up = face_up
         self.cards.append(card)
 
+    @property
+    def is_empty(self):
+        return len(self.cards) == 0
+
     def clear(self):
         self.cards.clear()
 
