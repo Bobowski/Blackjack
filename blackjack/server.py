@@ -34,9 +34,10 @@ def handle_exception(exception):
 @app.route('/register', methods=['POST'])
 @validate_schema('register')
 def register():
-    cash = int(request.json["cash"])
+    cash = request.json["cash"]
+    seed = request.json["seed"]
     uid = max(tables) + 1 if tables else 0
-    tables[uid] = Table(cash)
+    tables[uid] = Table(account_balance=cash, seed=seed)
     return jsonify({"header": "confirm_register", "uid": uid})
 
 

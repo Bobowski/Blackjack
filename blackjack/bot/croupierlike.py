@@ -2,7 +2,7 @@ from blackjack.bot.cmds import *
 
 
 cash = 1000
-uid = register(cash)["uid"]
+uid = register(cash, 11)["uid"]
 wins = 0
 
 for i in range(1000):

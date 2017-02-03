@@ -5,6 +5,9 @@ schemas = {
         "properties": {
             "cash": {
                 "type": "number"
+            },
+            "seed": {
+                "type": "number"
             }
         },
         "required": ["cash"]

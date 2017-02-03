@@ -87,11 +87,11 @@ class Croupier:
 
 
 class Table:
-    def __init__(self, account_balance: int):
+    def __init__(self, account_balance: int, seed: int=42):
         self.state = State(phase="awaiting", bid=0, winnings=0)
         self.player = Player(account_balance)
         self.croupier = Croupier()
-        self.decks = Decks()
+        self.decks = Decks(seed=seed)
 
         self.did_split = False
         self.did_double = False
@@ -155,6 +155,7 @@ class Table:
     def begin_game(self, bid: int):
         self.croupier.clear()
         self.player.clear()
+        self.did_split = False
 
         self.player.account_balance -= bid
         self.state.bid = bid
