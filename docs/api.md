@@ -30,41 +30,29 @@ Register
 }
 ```
 
-## Begin
+## <a id="begin"></a> `POST` `/player/<uid>/begin`
 Beginning new game (deal) is only possible if table is in `awaiting` or `end_game` state.
-
-- **URL:**
-
-  `POST` | `/player/<uid>/begin`
-- **Request JSON:**
-
+### Request JSON
 ```javascript
 Begin
 {
     "bid": number
 }
 ```
-- **Response JSON:**
+### Response JSON
+`Table`
 
-  `Table`
-  
-## Action
+## <a id="action"></a> `POST` `/player/<uid>/action`
 Perform one of available actions.
-
-- **URL:**
-
-  `POST` | `/player/<uid>/action`
-- **Request JSON:**
-
+### Request JSON
 ```javascript
 Action
 {
     "action": string  # split, double_down, stay, hit
 }
 ```
-- **Response JSON:**
-
-  `Table`
+### Response JSON
+`Table`
 
 #### Error Structure
 If some operation was not allowed of caused error that should be handled by client then this error message is returned with `400` return code.
