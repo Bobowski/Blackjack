@@ -13,7 +13,7 @@ To [begin](#begin) new card deal we have to privide amount of money for bid.
 It's now possible to perform one of [actions](#action) in main game loop.
 
 
-## `POST`  `/register` <a id="register"></a>
+## <a id="register"></a> `POST`  `/register` 
 First you need to register player and obtain `uid` that will allow to perform further actions.
 ### Request JSON
 ```javascript
