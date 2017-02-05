@@ -7,13 +7,16 @@ This implementation allows only playing againts croupier 1 vs 1 but still allows
 ## [API](docs/api.md)
 ## Team
 `// TODO`
-
+## Run server
+`// TODO`
+## Run bots
+`// TODO`
 
 ##Virtualenvwrapper
 Based on [documentation](https://virtualenvwrapper.readthedocs.io/en/latest/).
 
 First time:
-```
+```bash
 $ pip install virtualenvwrapper
 $ export WORKON_HOME=~/Envs
 $ mkdir -p $WORKON_HOME
@@ -24,7 +27,7 @@ $ pip install -r requirements.txt
 ```
 
 Then:
-```
+```bash
 $ workon env3-blackjack
 ```
 
