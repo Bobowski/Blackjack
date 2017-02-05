@@ -12,22 +12,17 @@ To play we first have to [register](#register) our player as return obtaining un
 To [begin](#begin) new card deal we have to privide amount of money for bid.
 It's now possible to perform one of [actions](#action) in main game loop.
 
-## Register
+
+## `POST`  `/register` <a id="register"></a>
 First you need to register player and obtain `uid` that will allow to perform further actions.
-
-- **URL:**
-
-  `POST` | `/register`
-- **Request JSON:**
-
+### Request JSON
 ```javascript
 Register
 {
     "cash": number
 }
 ```
-- **Response JSON:**
-
+### Response JSON
 ```javascript
 {
     "header": "confirm_register",
