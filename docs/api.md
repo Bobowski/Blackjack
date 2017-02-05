@@ -1,21 +1,23 @@
-# API
+# API Overview
 
-|          |        |                        |                                       |
-|:-------- | ------:|:---------------------- |:------------------------------------- |
+|                       |        |                        |                                       |
+|:--------------------- | ------:|:---------------------- |:------------------------------------- |
 | [register](#register) | `POST` | `/register`            | Register new player and obtain `uid`. |
-| [begin](#begin)    | `POST` | `/player/<uid>/begin`  | Begin new deal with specified `bid`.  |
-| [action](#action)   | `POST` | `/player/<uid>/action` | Perform `action`.                     |
+| [begin](#begin)       | `POST` | `/player/<uid>/begin`  | Begin new deal with specified `bid`.  |
+| [action](#action)     | `POST` | `/player/<uid>/action` | Perform `action`.                     |
 
+# API
+Blackjack API is failry simple. Using only three endpoints we are able to play game continously.
+To play we first have to [register](#register) our player as return obtaining unique id.
+To [begin](#begin) new card deal we have to privide amount of money for bid.
+It's now possible to perform one of [actions](#action) in main game loop.
 
-### Register
-First you need to register player and obtain `uid` that will allows to perform further actions.
+## Register
+First you need to register player and obtain `uid` that will allow to perform further actions.
 
 - **URL:**
 
-  `/register`
-- **Method:**
-
-  `POST`
+  `POST` | `/register`
 - **Request JSON:**
 
 ```javascript
@@ -33,15 +35,12 @@ Register
 }
 ```
 
-### Begin
+## Begin
 Beginning new game (deal) is only possible if table is in `awaiting` or `end_game` state.
 
 - **URL:**
 
-  `/player/<uid>/begin`
-- **Method:**
-
-  `POST`
+  `POST` | `/player/<uid>/begin`
 - **Request JSON:**
 
 ```javascript
@@ -54,15 +53,12 @@ Begin
 
   `Table`
   
-### Action
+## Action
 Perform one of available actions.
 
 - **URL:**
 
-  `/player/<uid>/action`
-- **Method:**
-
-  `POST`
+  `POST` | `/player/<uid>/action`
 - **Request JSON:**
 
 ```javascript
