@@ -1,4 +1,4 @@
-from blackjack.bot.cmds import *
+from blackjack.bots.cmds import *
 
 
 for j in range(100):
