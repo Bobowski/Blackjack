@@ -40,7 +40,7 @@ Begin
 }
 ```
 ### Response JSON
-`Table`
+[`Table`](#table)
 
 ## <a id="action"></a> `POST` `/player/<uid>/action`
 Perform one of available actions.
@@ -52,9 +52,11 @@ Action
 }
 ```
 ### Response JSON
-`Table`
+[`Table`](#table)
 
-#### Error Structure
+## Structures
+
+### Error
 If some operation was not allowed of caused error that should be handled by client then this error message is returned with `400` return code.
 ```javascript
 {
@@ -63,7 +65,7 @@ If some operation was not allowed of caused error that should be handled by clie
 }
 ```
 
-#### Structures
+### Table
 ```javascript
 Table
 {
