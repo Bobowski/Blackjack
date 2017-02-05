@@ -1,15 +1,13 @@
 # Yet Another Blackjack Server (YABS)
+This is yet another blackjack game server (well not really another, but sounds cool).
+We just wanted to write a simple card game that will enable writing bot clients.
+This implementation allows only playing againts croupier 1 vs 1 but still allows to have much fun out of it.
 
-This is an implementation of simple blackjack game in Python using Flask as HTTP server.
-Main idea is to allow writing bots that will play against croupier.
-At this moment this implementation allows only playing against croupier 1 vs 1.
+## [Rules](docs/rules.md)
+## [API](docs/api.md)
+## Team
+`// TODO`
 
-# Rules
-Goto: [rules](docs/rules.md)
-
-# API
-Goto: [api](docs/api.md)
-    
 
 ##Virtualenvwrapper
 Based on [documentation](https://virtualenvwrapper.readthedocs.io/en/latest/).
