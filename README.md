@@ -5,13 +5,6 @@ This implementation allows only playing againts croupier 1 vs 1 but still allows
 
 ## [Rules](docs/rules.md)
 ## [API](docs/api.md)
-## Team
-`// TODO`
-## Run server
-`// TODO`
-## Run bots
-`// TODO`
-
 ## Installation
 Its recommended to use virtualenv for meeting package requirements.
 Script below will create `venv` directory inside current working directory and install all necessary dependencies.
@@ -27,3 +20,14 @@ Before starting the application we have to activate venv.
 source venv/bin/activate
 ```
 Deactivating is done by simply writing `deactivate`.
+## Run server
+```bash
+python blackjack.py
+# -a Host address (default: localhost)
+# -p Port number  (default: 5000)
+# -d Verbose mode (default: false)
+```
+## Run bots
+`// TODO`
+## Team
+`// TODO`
