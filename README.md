@@ -12,23 +12,18 @@ This implementation allows only playing againts croupier 1 vs 1 but still allows
 ## Run bots
 `// TODO`
 
-##Virtualenvwrapper
-Based on [documentation](https://virtualenvwrapper.readthedocs.io/en/latest/).
-
-First time:
+## Installation
+Its recommended to use virtualenv for meeting package requirements.
+Script below will create `venv` directory inside current working directory and install all necessary dependencies.
 ```bash
-$ pip install virtualenvwrapper
-$ export WORKON_HOME=~/Envs
-$ mkdir -p $WORKON_HOME
-$ source /usr/local/bin/virtualenvwrapper.sh
-$ mkvirtualenv env3-blackjack -p python3
-$ workon env3-blackjack
-$ pip install -r requirements.txt
+#!/bin/bash
+virtualenv -p python3 venv
+source venv/bin/activate
+pip install -r requirements.txt
+deactivate
 ```
-
-Then:
+Before starting the application we have to activate venv.
 ```bash
-$ workon env3-blackjack
+source venv/bin/activate
 ```
-
-
+Deactivating is done by simply writing `deactivate`.
