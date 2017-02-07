@@ -30,7 +30,7 @@ python blackjack.py
 ## Run bots
 `// TODO`
 ## Team
-Members of summer semester 2016/2017 [KNSI](http://knsi.pwr.wroc.pl) scientific circle.
+Members of summer semester 2016/2017 [KNSI (Python)](http://knsi.pwr.wroc.pl) scientific circle.
 - [Adam Bobowski](https://github.com/Bobowski)
 - [Mateusz Burniak](https://github.com/matbur95)
 - [Adam Dołżycki](https://github.com/adolzycki)
